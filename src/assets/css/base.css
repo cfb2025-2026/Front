@@ -1,0 +1,14 @@
+:root{
+  --bg:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --brand:#8d947f;
+  --brand-ghost:#eef0ec;
+  --ring:#d1d5db;
+  --shadow: 0 10px 25px rgba(0,0,0,.06);
+  --radius: 16px;
+}
+*{box-sizing:border-box}
+html,body,#__nuxt{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+a{color:inherit;text-decoration:none}

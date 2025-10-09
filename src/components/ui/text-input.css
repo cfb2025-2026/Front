@@ -1,0 +1,15 @@
+.text-input{
+  width:100%;
+  border:1px solid var(--ring);
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:1rem;
+  outline:none;
+  transition:border-color .15s ease, box-shadow .15s ease;
+  background:#f5f1f1;
+}
+.text-input:focus{
+  border-color:#8d947f;
+  box-shadow:0 0 0 3px rgba(141,148,127,.16);
+}
+::placeholder{color:#b2b4b0}

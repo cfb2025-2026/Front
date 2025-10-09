@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import './auth-form.css'
-import TextInput from '@/components/ui/TextInput.vue'
-import PrimaryButton from '@/components/ui/PrimaryButton.vue'
-import RoleButton from '@/components/ui/Button.vue'
 import { ref } from 'vue'
+import Button from '@/components/ui/Button.vue'
 
 const role = ref<'acheteur'|'vendeur'>('acheteur')
 const email = ref('')
@@ -30,8 +28,8 @@ async function onSubmit(){
     <img src="/logo.svg" alt="Markety" class="logo" />
 
     <div class="roles">
-      <RoleButton label="Acheteur" :active="role==='acheteur'" @click="role='acheteur'" />
-      <RoleButton label="Vendeur"  :active="role==='vendeur'"  @click="role='vendeur'"  />
+    <Button  name="Acheteur" :style="role === 'acheteur' ? 'customer' : 'secondary'" :size="role === 'acheteur' ? undefined : 'small'" @click="role='acheteur'"/>
+    <Button name="Vendeur" :style="role === 'vendeur' ? 'seller' : 'secondary'" :size="role === 'vendeur' ? undefined : 'small'"  @click="role='vendeur'" />
     </div>
 
     <form class="form" @submit.prevent="onSubmit">

@@ -1,7 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Navbar from '~/components/ui/Navbar.vue';
+</script>
 
 <template>
   <div class="page-auth">
+    <Navbar />
     <AuthForm />
   </div>
 </template>

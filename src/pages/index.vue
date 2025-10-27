@@ -6,15 +6,24 @@
       <nav class="header-nav">
         <a href="#">Mobilier</a>
         <a href="#">Décoration</a>
-        <a href="#">Réno</a>
         <a href="#">Vaisselle</a>
+        <a href="#">Bijoux</a>
         <a href="#">Linge de Maison</a>
       </nav>
       <div class="header-icons">
-        <SearchIcon />
-        <CartButton />
-        <UserIcon />
-      </div>
+  <div class="searchbar-container">
+    <button class="icon-btn" @click="showSearch = true" v-if="!showSearch" aria-label="Rechercher">
+      <SearchIcon />
+    </button>
+    <SearchBar
+      v-if="showSearch"
+      @search="onSearch"
+      placeholder="Rechercher un produit..."
+    />
+  </div>
+  <CartButton />
+  <UserIcon />
+</div>
     </header>
 
     <!-- Banner -->
@@ -54,7 +63,6 @@
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
           <Button name="Devenez vendeur sur Markety !" style="seller" />
         </div>
-        
       </div>
     </section>
 
@@ -66,7 +74,9 @@
           <strong>EXPLORER</strong>
           <div>Mobilier</div>
           <div>Décoration</div>
-          <div>Réno</div>
+          <div>Bijoux</div>
+          <div>Vaisselle</div>
+          <div>Linge de Maison</div>
         </div>
         <div>
           <strong>CONTACT</strong>
@@ -82,22 +92,39 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import CartButton from '@/components/ui/CartButton.vue'
+import SearchBar from '@/components/ui/SearchBar.vue'
+
 import SearchIcon from '@/assets/icons/SearchIcon.vue'
 import UserIcon from '@/assets/icons/UserIcon.vue'
 
+const showSearch = ref(false)
+function onSearch(query: string) {
+  // Traite la recherche ici (redirige, filtre, etc.)
+  console.log('Recherche :', query)
+  showSearch.value = false
+}
+
 const categories = [
-  { name: 'Mobilier', img: '/public/cat-mobilier.jpg' },
-  { name: 'Décoration', img: '/public/cat-deco.jpg' },
-  { name: 'Réno', img: '/public/cat-reno.jpg' },
-  { name: 'Vaisselle', img: '/public/cat-vaisselle.jpg' },
-  { name: 'Linge de Maison', img: '/public/cat-linge.jpg' },
-  { name: 'Catégorie +', img: '/public/cat-plus.jpg' }
+  { name: 'Mobilier', img: '/mobilier.svg' },
+  { name: 'Décoration', img: '/décoration.svg' },
+  { name: 'Vaisselle', img: '/vaisselle.svg' },
+  { name: 'Bijoux', img: '/bijoux.svg' }, 
+  { name: 'Linge de Maison', img: '/linge de maison.svg' },
 ]
 </script>
 
 <style scoped>
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
 .home-page {
   background: #fff;
   min-height: 100vh;
@@ -133,6 +160,14 @@ const categories = [
   font-size: 20px;
   align-items: center;
 }
+
+.searchbar-container {
+  width: 220px; /* adapte la largeur à ta SearchBar */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .banner {
   width: 100vw;
   height: 120px;
@@ -155,7 +190,7 @@ const categories = [
   display: flex;
   gap: 18px;
   margin-top: 12px;
-  border: 3px solid #3A8DFF;
+  border: 2px solid #e8deb5ff;
   border-radius: 12px;
   padding: 12px;
   background: #fff;
@@ -164,7 +199,7 @@ const categories = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 120px;
+  width: 190px;
   cursor: pointer;
 }
 .category-card img {
@@ -235,11 +270,6 @@ const categories = [
 }
 .cta-content h3 {
   margin-bottom: 12px;
-}
-.cta-img {
-  width: 220px;
-  border-radius: 10px;
-  object-fit: cover;
 }
 .footer {
   width: 100vw;

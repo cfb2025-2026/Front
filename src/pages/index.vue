@@ -2,8 +2,8 @@
   <div class="home-page">
     <!-- Header -->
     <header class="header">
-      <img src="/logo.svg" alt="Markety" class="header-logo" />
-      <nav class="header-nav">
+  <img src="/logo.svg" alt="Markety" class="header-logo" />
+  <nav class="header-nav">
         <a href="#">Mobilier</a>
         <a href="#">Décoration</a>
         <a href="#">Vaisselle</a>
@@ -132,7 +132,7 @@ const categories = [
   flex-direction: column;
 }
 .header {
-  width: 100vw;
+  width: 99vw;
   background: #f5f5f5;
   padding: 12px 0;
   display: flex;
@@ -145,7 +145,10 @@ const categories = [
 }
 .header-nav {
   display: flex;
-  gap: 24px;
+  margin-left: 150px;
+  gap: 30px;
+  justify-content: center;
+  flex: 1;
 }
 .header-nav a {
   color: #222;
@@ -156,13 +159,12 @@ const categories = [
 .header-icons {
   display: flex;
   gap: 18px;
-  margin-right: 32px;
-  font-size: 20px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .searchbar-container {
-  width: 220px; /* adapte la largeur à ta SearchBar */
+  width: 200px; /* adapte la largeur à ta SearchBar */
   display: flex;
   align-items: center;
   justify-content: flex-end;

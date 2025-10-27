@@ -1,34 +1,19 @@
 <template>
   <div class="profil-page">
-    <!-- Header -->
-    <header class="header">
-      <img src="/logo.svg" alt="Markety" class="header-logo" />
-      <nav class="header-nav">
-        <a href="#">Mobiliers</a>
-        <a href="#">Découvertes</a>
-        <a href="#">Bijoux</a>
-        <a href="#">Vaisselles</a>
-        <a href="#">Linge de maison</a>
-    </nav>
-      <div class="header-icons">
-        <span>🔍</span>
-        <span>🛒</span>
-        <span>👤</span>
-      </div>
-    </header>
+    <Navbar />
 
     <!-- Avatar -->
     <div class="profil-header">
       <div class="avatar-wrapper">
         <div class="avatar">
-          <svg width="70" height="70" viewBox="0 0 70 70" fill="none">
+          <svg width="130" height="130"viewBox="0 0 70 70" fill="none">
             <circle cx="35" cy="35" r="35" fill="#EFEFEF"/>
             <circle cx="35" cy="30" r="14" fill="#D6B7A0"/>
             <ellipse cx="35" cy="54" rx="20" ry="12" fill="#D6B7A0"/>
           </svg>
         </div>
         <button class="edit-avatar" @click="onEditAvatar">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+          <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="12" fill="#fff"/>
             <path d="M15.5 6.5l2 2M7 17l8.5-8.5a1.414 1.414 0 1 1 2 2L9 19H7v-2z" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -58,7 +43,6 @@
       </MenuItem>
       <MenuItem @click="onItemClick('notifications')" @edit="onEditClick('notifications')">
         <template #icon>
-          <span>🔔</span>
         </template>
         Notifications
       </MenuItem>
@@ -69,33 +53,11 @@
         Déconnexion
       </MenuItem>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <img src="/logo.svg" alt="Markety" class="footer-logo" />
-      <div class="footer-links">
-        <div>
-          <strong>EXPLOREZ</strong>
-          <div>Mobiliers</div>
-          <div>Décorations</div>
-          <div>Bijoux</div>
-          <div>Vaisselles</div>
-          <div>Linge de Maison</div>
-        </div>
-        <div>
-          <strong>CONTACTEZ</strong>
-          <div>contact@markety.com</div>
-          <div>+33 6 12 23 01 45</div>
-        </div>
-      </div>
-      <div class="footer-copy">
-        Copyright © 2024 Markety. Tous droits réservés.
-      </div>
-    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import Navbar from '@/components/ui/Navbar.vue'
 import MenuItem from '@/components/profil/MenuItem.vue'
 
 function onItemClick(item: string) {
@@ -110,6 +72,8 @@ function onEditAvatar() {
 </script>
 
 <style scoped>
+
+
 .profil-page {
   min-height: 100vh;
   background: #fff;
@@ -117,106 +81,94 @@ function onEditAvatar() {
   flex-direction: column;
   align-items: center;
 }
-.header {
-  width: 100vw;
-  background: #f5f5f5;
-  padding: 12px 0 12px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.header-logo {
-  height: 32px;
-  margin-left: 32px;
-}
-.header-nav {
-  display: flex;
-  gap: 24px;
-}
-.header-nav a {
-  color: #222;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 15px;
-}
-.header-icons {
-  display: flex;
-  gap: 18px;
-  margin-right: 32px;
-  font-size: 20px;
-}
+
 .profil-header {
-  width: 100vw;
+  width: 100%;
   background: #f5f5f5;
-  padding: 32px 0 48px 0;
+  padding: 10px 0 10px 0;
   display: flex;
   justify-content: center;
 }
+
 .avatar-wrapper {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.avatar {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: #EFEFEF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+
 .edit-avatar {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: none;
+  margin-top: 10px;
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
-  transform: translate(30%, 30%);
 }
+
 .profil-menu {
   margin: 0 auto;
-  margin-top: -30px;
-  max-width: 350px;
+  margin-top: 40px;
+  max-width: 560px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   background: transparent;
+  align-items: center; /* centre les items */
 }
-.footer {
-  width: 100vw;
-  background: #f5f5f5;
-  padding: 55px 0 6px 0; /* Hauteur réduite */
+
+.navbar-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-top: 32px; /* Optionnel : réduit l'espace au-dessus */
+  justify-content: space-between;
+  width: 100vw;
+  background: #fff;
+  padding: 8px 0;
 }
-.footer-logo {
-  display: block;
-  height: 28px; /* Optionnel : réduit la taille du logo */
-  margin-bottom: 8px;
-}
-.footer-links {
+
+.navbar-left {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  align-items: center;
+  margin-left: 24px;
 }
-.footer-links div {
+
+.logo-link img {
+  height: 32px;
+}
+
+.navbar-center {
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 13px;
-  color: #444;
+  justify-content: center;
 }
-.footer-copy {
-  font-size: 12px;
-  color: #888;
-  margin-top: 4px;
+
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-link {
+  color: #222;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-right: 24px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
 }
 </style>

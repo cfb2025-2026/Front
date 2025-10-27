@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import './auth-form.css'
 import { ref } from 'vue'
 import Button from '@/components/ui/Button.vue'
 
-const role = ref<'acheteur'|'vendeur'>('acheteur')
+const role = ref<'login'|'vendeur'>('login')
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -28,8 +27,7 @@ async function onSubmit(){
     <img src="/logo.svg" alt="Markety" class="logo" />
 
     <div class="roles">
-    <Button  name="Acheteur" :style="role === 'acheteur' ? 'customer' : 'secondary'" :size="role === 'acheteur' ? undefined : 'small'" @click="role='acheteur'"/>
-    <Button name="Vendeur" :style="role === 'vendeur' ? 'seller' : 'secondary'" :size="role === 'vendeur' ? undefined : 'small'"  @click="role='vendeur'" />
+    <Button  name="Login" :style="role === 'login' ? 'customer' : 'secondary'" :size="role === 'login' ? undefined : 'small'" @click="role='login'"/>
     </div>
 
     <form class="form" @submit.prevent="onSubmit">
@@ -39,9 +37,13 @@ async function onSubmit(){
       <label class="field-label">Mot de passe <span class="asterisk">*</span></label>
       <TextInput v-model="password" name="password" type="password" placeholder="************" autocomplete="current-password" />
 
-      <PrimaryButton :disabled="loading" class="btn-main">
-        {{ loading ? 'Connexion…' : 'Connexion' }}
-      </PrimaryButton>
+     <PrimaryButton
+  :disabled="loading"
+  class="btn-main"
+  :class="{ rose: role === 'vendeur' }"
+>
+  {{ loading ? 'Connexion…' : 'Connexion' }}
+</PrimaryButton>
 
       <button class="btn-secondary" type="button">Inscription</button>
 
@@ -49,3 +51,54 @@ async function onSubmit(){
     </form>
   </div>
 </template>
+
+
+
+<style>
+.auth-card{
+  width:min(440px, 92vw);
+  background:#fff;
+  border:1px solid var(--ring);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:28px 24px 24px;
+  display:flex;flex-direction:column;gap:18px;
+}
+
+.roles{
+    display: flex;
+    gap: 10px;
+    align-self: center;
+    min-height: 48px; /* Hauteur fixe adaptée à tes boutons */
+      
+}
+
+.logo{height:36px;width:auto;user-select:none}
+
+
+
+.form{display:flex;flex-direction:column;gap:10px}
+.field-label{font-size:.9rem;color:var(--text);margin-top:6px}
+.asterisk{color:#ef4444}
+
+.btn-main{
+    margin-top:25px;
+    width: 30%;
+    background:var(--brand);color:#fff;
+    border:none;border-radius:12px;padding:5px 18px;
+    font-weight:350;
+    cursor:pointer;
+}
+.btn-main.rose {
+  background: #D6B7A0 !important;
+  color: #fff !important;
+}
+
+.btn-secondary{
+  margin-top:8px;width:100%;
+  background:var(--brand-ghost);color:#111;
+  border:none;border-radius:12px;padding:10px 14px;
+  font-weight:500;cursor:pointer;
+}
+.error{margin-top:8px;color:#b91c1c;font-size:.9rem}
+</style>

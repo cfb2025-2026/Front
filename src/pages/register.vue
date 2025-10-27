@@ -1,14 +1,14 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="page-auth">
-    <AuthForm />
+  <div class="page-register">
+    <RegisterForm />
   </div>
 </template>
 
 
 <style>
-.page-auth{
+.page-register{
   min-height:100dvh;
   display:grid;
   place-items:center;

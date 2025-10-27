@@ -52,7 +52,7 @@ button.seller {
   background-color: var(--seller-color);
   color: white;
   border: none;
-  box-shadow: 0 0 7px rgba(214, 183, 160, 0.5);
+  box-shadow: 0 0 7px rgba(177, 126, 88, 0.5);
 }
 button.secondary {
   background-color: white;
@@ -63,7 +63,7 @@ button.add-to-cart {
   background-color: var(--secondary-color);
   color: var(--text-color);
   border: none;
-  box-shadow: 0 0 7px rgba(239, 239, 239, 0.5);
+  box-shadow: 0 0 7px rgba(87, 187, 92, 0.5);
   padding: 8px 43px;
   font-size: 12px;
 }

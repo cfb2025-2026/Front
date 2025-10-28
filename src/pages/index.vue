@@ -55,11 +55,11 @@
         </div>
       </div>
 
-      <div v-else class="products-list">
-        <div class="product-card" v-for="product in products" :key="product.product_id">
-          <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
-          <div class="product-title">{{ product.product_name }}</div>
-          <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
+      <div v-else class="products-list"> 
+          <NuxtLink class="product-card" v-for="product in products" :key="product.product_id" :to="`/products/${product.product_id}`">
+            <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
+            <div class="product-title">{{ product.product_name }}</div>
+            <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
 
           <!-- bouton add-to-cart compact (utilise la classe button.add-to-cart du composant Button.vue) -->
           <Button
@@ -68,7 +68,8 @@
           >
             Ajouter au panier
           </Button>
-        </div>
+        </NuxtLink>
+        <ProductCard v-for="product in products" :key="product.product_id" :product="product" />
       </div>
 
       <Button variant="secondary" class="see-more-btn">Voir plus de produits</Button>
@@ -117,6 +118,8 @@ import CartButton from '@/components/ui/CartButton.vue'
 import SearchBar from '@/components/ui/SearchBar.vue'
 import SearchIcon from '@/assets/icons/SearchIcon.vue'
 import UserIcon from '@/assets/icons/UserIcon.vue'
+import ProductCard from '@/components/ui/ProductCard.vue'
+
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -361,7 +364,7 @@ button.customer {
   object-fit: cover;
 }
 .product-title {
-  font-size: 14px;
+  font-size: 11px;
   color: #222;
   margin-bottom: 4px;
   text-align: center;

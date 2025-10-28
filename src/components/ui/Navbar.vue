@@ -69,7 +69,7 @@ function onSearch(query) {
 </script>
 
 <style scoped>
-<style scoped>
+
 .navbar-container {
   display: flex;
   align-items: center;

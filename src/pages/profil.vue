@@ -6,7 +6,7 @@
     <div class="profil-header">
       <div class="avatar-wrapper">
         <div class="avatar">
-          <svg width="130" height="130"viewBox="0 0 70 70" fill="none">
+          <svg width="130" height="130" viewBox="0 0 70 70" fill="none">
             <circle cx="35" cy="35" r="35" fill="#EFEFEF"/>
             <circle cx="35" cy="30" r="14" fill="#D6B7A0"/>
             <ellipse cx="35" cy="54" rx="20" ry="12" fill="#D6B7A0"/>
@@ -53,12 +53,40 @@
         Déconnexion
       </MenuItem>
     </div>
+
+    <!-- Liste des utilisateurs Supabase -->
+    <div v-if="users.length" class="users-list">
+      <h3>Utilisateurs Supabase :</h3>
+      <ul>
+        <li v-for="user in users" :key="user.id">
+          {{ user.email || user.username || user.id }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import Navbar from '@/components/ui/Navbar.vue'
 import MenuItem from '@/components/profil/MenuItem.vue'
+
+const users = ref([])
+
+async function getUsers() {
+  const url = "https://twpsekokpqcpswgzdkjn.supabase.co/rest/v1/Users?select=*"
+  const res = await fetch(url, {
+    headers: {
+      apikey: "TON_API_KEY", // remplace par ta vraie clé
+      Authorization: "Bearer TON_API_KEY"
+    }
+  })
+  users.value = await res.json()
+}
+
+onMounted(() => {
+  getUsers()
+})
 
 function onItemClick(item: string) {
   alert('Item cliqué : ' + item)
@@ -72,8 +100,6 @@ function onEditAvatar() {
 </script>
 
 <style scoped>
-
-
 .profil-page {
   min-height: 100vh;
   background: #fff;
@@ -170,5 +196,16 @@ function onEditAvatar() {
   padding: 4px;
   display: flex;
   align-items: center;
+}
+
+.users-list {
+  margin-top: 32px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
 }
 </style>

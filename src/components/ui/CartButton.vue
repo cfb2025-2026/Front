@@ -34,16 +34,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <style scoped>
+
+
 .cart-button {
   background: transparent;
   border: none;
   cursor: pointer;
   position: relative;
-  padding: 0;
+  padding: 2px !important;
   display: inline-flex;
   align-items: center;
   font-family: var(--font-family);
 }
+.cart-button svg {
+  width: 16px !important;
+  height: 16px !important;
+  display: block;
+}
+
 .cart-badge {
   position: absolute;
   top: -6px;

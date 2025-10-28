@@ -22,7 +22,8 @@
     />
   </div>
   <CartButton />
-  <UserIcon />
+  <NuxtLink to="/profil"><UserIcon /></NuxtLink>
+
 </div>
     </header>
 
@@ -100,6 +101,7 @@ import SearchBar from '@/components/ui/SearchBar.vue'
 import SearchIcon from '@/assets/icons/SearchIcon.vue'
 import UserIcon from '@/assets/icons/UserIcon.vue'
 
+
 const showSearch = ref(false)
 function onSearch(query: string) {
   // Traite la recherche ici (redirige, filtre, etc.)
@@ -126,6 +128,9 @@ const categories = [
   align-items: center;
 }
 .home-page {
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow-x: hidden;
   background: #fff;
   min-height: 100vh;
   display: flex;

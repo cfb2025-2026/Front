@@ -30,6 +30,16 @@ button {
   height: fit-content;
   transition: all 0.2s;
 }
+
+button.add-to-cart {
+  padding: 6px 18px;
+  font-size: 14px;
+  white-space: nowrap;   /* Empêche le retour à la ligne */
+  min-width: 0;
+  width: auto;
+  box-sizing: border-box;
+}
+
 button.large {
   font-size: 14px;
   padding: 18px 50px;

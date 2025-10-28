@@ -4,7 +4,6 @@
       <NuxtLink to="/" class="logo-link"><img src="/logo.svg" alt="Logo" /></NuxtLink>
     </div>
 
-    <!-- desktop center nav -->
     <nav class="navbar-center" aria-hidden="false">
       <ul class="nav-links">
         <li><NuxtLink to="/mobilier" class="nav-link" :class="{ active: isActive('/mobilier') }">Mobilier</NuxtLink></li>
@@ -16,42 +15,26 @@
     </nav>
 
     <div class="navbar-right">
-  <div class="searchbar-container">
-    <button
-      class="icon-btn"
-      @click="showSearch = true"
-      aria-label="Rechercher"
-      v-if="!showSearch"
-    >
-      <SearchIcon />
-    </button>
-    <SearchBar
-      v-if="showSearch"
-      @search="onSearch"
-      placeholder="Rechercher un produit..."
-    />
-  </div>
-  <NuxtLink to="/profil"><UserIcon /></NuxtLink>
-  <CartButton :count="1" />
-</div>
-      <!-- mobile toggle button -->
-      <button
-        class="mobile-toggle"
-        @click="toggleMobile"
-        :aria-expanded="mobileOpen.toString()"
-        aria-controls="mobile-drawer"
-        aria-label="Ouvrir le menu"
-      >
-        <span v-if="!mobileOpen" class="icon-hamburger" aria-hidden="true">
-          <svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 1.5h22M0 7h22M0 12.5h22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </span>
-        <span v-else class="icon-close" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2l14 14M16 2L2 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </span>
-      </button>
+      <div class="searchbar-container">
+        <button
+          class="icon-btn"
+          @click="showSearch = true"
+          aria-label="Rechercher"
+          v-if="!showSearch"
+        >
+          <SearchIcon />
+        </button>
+        <SearchBar
+          v-if="showSearch"
+          @search="onSearch"
+          placeholder="Rechercher un produit..."
+        />
+      </div>
+      
+      <CartButton :count="1" />
+      <NuxtLink to="/profil"><UserIcon /></NuxtLink>
     </div>
   </header>
-  <!-- ...reste inchangé... -->
 </template>
 
 <script setup>
@@ -86,6 +69,55 @@ function onSearch(query) {
 </script>
 
 <style scoped>
+<style scoped>
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100vw;
+  background: #fff;
+  padding: 8px 0;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  margin-left: 24px;
+}
+
+.logo-link img {
+  height: 32px;
+}
+
+.navbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-link {
+  color: #222;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-right: 24px;
+}
+
 .icon-btn {
   background: transparent;
   border: none;
@@ -93,10 +125,5 @@ function onSearch(query) {
   padding: 4px;
   display: flex;
   align-items: center;
-}
-
-.searchbar-container {
-  width: 220px;
-  background: pink; /* test visuel */
 }
 </style>

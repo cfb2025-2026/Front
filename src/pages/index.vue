@@ -69,7 +69,6 @@
             Ajouter au panier
           </Button>
         </NuxtLink>
-        <ProductCard v-for="product in products" :key="product.product_id" :product="product" />
       </div>
 
       <Button variant="secondary" class="see-more-btn">Voir plus de produits</Button>

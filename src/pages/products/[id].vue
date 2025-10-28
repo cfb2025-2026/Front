@@ -1,5 +1,16 @@
 <template>
+  
   <div class="product-page">
+    <header class="header">
+      <img src="/logo.svg" alt="Markety" class="header-logo" />
+      <nav class="header-nav">
+        <a href="#">Mobilier</a>
+        <a href="#">Décoration</a>
+        <a href="#">Vaisselle</a>
+        <a href="#">Bijoux</a>
+        <a href="#">Linge de Maison</a>
+      </nav>
+      </header>
     <div v-if="loading" class="center">Chargement…</div>
 
     <div v-else-if="product" class="product-grid">
@@ -167,6 +178,26 @@ watch(
 </script>
 
 <style scoped>
+
+.header {
+  width: 99vw;
+  background: #f5f5f5;
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-logo {
+  height: 32px;
+  margin-left: 32px;
+}
+.header-nav {
+  display: flex;
+  margin-left: 150px;
+  gap: 30px;
+  justify-content: center;
+  flex: 1;
+}
 .product-page { max-width: 1100px; margin: 24px auto; padding: 16px; box-sizing: border-box; }
 .center { text-align: center; padding: 40px 0; color: #666; }
 
@@ -194,4 +225,5 @@ watch(
   .product-grid { grid-template-columns: 1fr; }
   .main-image { min-height: 260px; }
 }
+
 </style>

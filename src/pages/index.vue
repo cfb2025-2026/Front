@@ -60,11 +60,18 @@
           <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
           <div class="product-title">{{ product.product_name }}</div>
           <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
-          <Button name="Ajouter au panier" style="main-custumer" />
+
+          <!-- bouton add-to-cart compact (utilise la classe button.add-to-cart du composant Button.vue) -->
+          <Button
+            variant="add-to-cart"
+            @click="addToCart(product)"
+          >
+            Ajouter au panier
+          </Button>
         </div>
       </div>
 
-      <Button name="Voir plus de produits" style="main-custumer" class="see-more-btn" />
+      <Button variant="secondary" class="see-more-btn">Voir plus de produits</Button>
     </section>
 
     <!-- Entreprise CTA -->
@@ -72,7 +79,7 @@
       <div class="cta-content">
         <div>
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
-          <Button name="Devenez vendeur sur Markety !" style="main-custumer" />
+          <Button variant="main-custumer">Devenez vendeur sur Markety !</Button>
         </div>
       </div>
     </section>
@@ -144,26 +151,41 @@ function formatPrice(val: number | string | undefined) {
   return n.toFixed(2)
 }
 
+// add to cart (localStorage) - simple implementation
+function addToCart(product: Product) {
+  try {
+    const raw = localStorage.getItem('cart') || '[]'
+    const cart: any[] = JSON.parse(raw)
+    const idx = cart.findIndex((p: any) => p.product_id === product.product_id)
+    if (idx >= 0) {
+      cart[idx].qty = (cart[idx].qty ?? 1) + 1
+    } else {
+      cart.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
+    }
+    localStorage.setItem('cart', JSON.stringify(cart))
+    // console feedback — remplace par un toast si tu as un système de notifications
+    console.log('Produit ajouté au panier :', product.product_name)
+  } catch (e) {
+    console.error('Erreur ajout panier', e)
+  }
+}
+
 // Try Nuxt useFetch first (Nuxt 3). If not available, fallback to window fetch.
 async function loadProducts() {
   loading.value = true
-  // attempt Nuxt auto-imports
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // Nuxt auto-imports if present
     const { useFetch, useRuntimeConfig } = await import('#imports') as any
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
-    console.log("env",import.meta.env)
-
-    const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch('/Product?select=*', { baseURL: base,
+      const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
+      const { data, error } = await useFetch('/Product?select=*', {
+        baseURL: base,
         onRequest ({ request, options }) {
-       // Set the request headers
-       // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
-       options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
-       options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
-  }},
-       )
+          options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
+          options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
+        }
+      })
       if (error?.value) {
         console.error('useFetch error:', error.value)
       } else if (data?.value) {
@@ -173,6 +195,7 @@ async function loadProducts() {
       return
     }
   } catch (e) {
+    // fallback below
   }
 
   // Fallback fetch (Vue / Vite)
@@ -203,7 +226,7 @@ onMounted(loadProducts)
 
 <style scoped>
 .icon-btn {
-  background: transparent;
+  background: none;
   border: none;
   cursor: pointer;
   padding: 4px;
@@ -302,6 +325,13 @@ onMounted(loadProducts)
   font-size: 14px;
   color: #444;
 }
+button.customer {
+  background-color: var(--main-color);
+  color: white;
+  border: none;
+  box-shadow: 0 0 7px rgba(98, 100, 88, 0.5);
+}
+
 .products {
   max-width: 1100px;
   margin: 32px auto 0 auto;
@@ -345,6 +375,14 @@ onMounted(loadProducts)
   margin: 24px auto 0 auto;
   display: block;
 }
+
+/* petite adaptation si tu veux ajuster la taille du add-to-cart dans cette page */
+.product-card .add-to-cart {
+  padding: 6px 18px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .cta {
   background: #f5f5f5;
   margin: 40px 0 0 0;

@@ -2,8 +2,8 @@
   <div class="home-page">
     <!-- Header -->
     <header class="header">
-  <img src="/logo.svg" alt="Markety" class="header-logo" />
-  <nav class="header-nav">
+      <img src="/logo.svg" alt="Markety" class="header-logo" />
+      <nav class="header-nav">
         <a href="#">Mobilier</a>
         <a href="#">Décoration</a>
         <a href="#">Vaisselle</a>
@@ -11,20 +11,19 @@
         <a href="#">Linge de Maison</a>
       </nav>
       <div class="header-icons">
-  <div class="searchbar-container">
-    <button class="icon-btn" @click="showSearch = true" v-if="!showSearch" aria-label="Rechercher">
-      <SearchIcon />
-    </button>
-    <SearchBar
-      v-if="showSearch"
-      @search="onSearch"
-      placeholder="Rechercher un produit..."
-    />
-  </div>
-  <CartButton />
-  <NuxtLink to="/profil"><UserIcon /></NuxtLink>
-
-</div>
+        <div class="searchbar-container">
+          <button class="icon-btn" @click="showSearch = true" v-if="!showSearch" aria-label="Rechercher">
+            <SearchIcon />
+          </button>
+          <SearchBar
+            v-if="showSearch"
+            @search="onSearch"
+            placeholder="Rechercher un produit..."
+          />
+        </div>
+        <CartButton />
+        <NuxtLink to="/profil"><UserIcon /></NuxtLink>
+      </div>
     </header>
 
     <!-- Banner -->
@@ -46,15 +45,26 @@
     <!-- Nouveautés -->
     <section class="products">
       <h2>Nouveautés</h2>
-      <div class="products-list">
-        <div class="product-card" v-for="n in 12" :key="n">
-          <div class="product-img"></div>
-          <div class="product-title">Nom du produit</div>
-          <div class="product-price">XX,XX €</div>
-          <Button name="Ajouter au panier" style="add-to-cart" />
+
+      <div v-if="loading" class="products-list">
+        <!-- simple skeleton fallback -->
+        <div class="product-card" v-for="n in 3" :key="'sk-'+n">
+          <div class="product-img" style="opacity:.15"></div>
+          <div class="product-title" style="height:14px; width:80%; background:#eee;margin-bottom:6px"></div>
+          <div class="product-price" style="height:12px; width:50%; background:#eee"></div>
         </div>
       </div>
-      <Button name="Voir plus de produits" style="add-to-cart" class="see-more-btn" />
+
+      <div v-else class="products-list">
+        <div class="product-card" v-for="product in products" :key="product.product_id">
+          <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
+          <div class="product-title">{{ product.product_name }}</div>
+          <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
+          <Button name="Ajouter au panier" style="main-custumer" />
+        </div>
+      </div>
+
+      <Button name="Voir plus de produits" style="main-custumer" class="see-more-btn" />
     </section>
 
     <!-- Entreprise CTA -->
@@ -62,7 +72,7 @@
       <div class="cta-content">
         <div>
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
-          <Button name="Devenez vendeur sur Markety !" style="seller" />
+          <Button name="Devenez vendeur sur Markety !" style="main-custumer" />
         </div>
       </div>
     </section>
@@ -93,18 +103,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+// Imports UI
+import { ref, onMounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import CartButton from '@/components/ui/CartButton.vue'
 import SearchBar from '@/components/ui/SearchBar.vue'
-
 import SearchIcon from '@/assets/icons/SearchIcon.vue'
 import UserIcon from '@/assets/icons/UserIcon.vue'
 
-
 const showSearch = ref(false)
 function onSearch(query: string) {
-  // Traite la recherche ici (redirige, filtre, etc.)
   console.log('Recherche :', query)
   showSearch.value = false
 }
@@ -113,9 +121,84 @@ const categories = [
   { name: 'Mobilier', img: '/mobilier.svg' },
   { name: 'Décoration', img: '/décoration.svg' },
   { name: 'Vaisselle', img: '/vaisselle.svg' },
-  { name: 'Bijoux', img: '/bijoux.svg' }, 
+  { name: 'Bijoux', img: '/bijoux.svg' },
   { name: 'Linge de Maison', img: '/linge de maison.svg' },
 ]
+
+type Product = {
+  product_id: string
+  product_name: string
+  product_price: number
+  product_imgurl: string
+  product_description?: string
+  advice_id?: string
+  user_id?: string
+}
+
+const products = ref<Product[]>([])
+const loading = ref(true)
+
+// helper to format price safely
+function formatPrice(val: number | string | undefined) {
+  const n = Number(val ?? 0)
+  return n.toFixed(2)
+}
+
+// Try Nuxt useFetch first (Nuxt 3). If not available, fallback to window fetch.
+async function loadProducts() {
+  loading.value = true
+  // attempt Nuxt auto-imports
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { useFetch, useRuntimeConfig } = await import('#imports') as any
+    if (useFetch && useRuntimeConfig) {
+      const config = useRuntimeConfig()
+    console.log("env",import.meta.env)
+
+    const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
+      const { data, error } = await useFetch('/Product?select=*', { baseURL: base,
+        onRequest ({ request, options }) {
+       // Set the request headers
+       // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
+       options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
+       options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
+  }},
+       )
+      if (error?.value) {
+        console.error('useFetch error:', error.value)
+      } else if (data?.value) {
+        products.value = Array.isArray(data.value) ? data.value : (data.value.products ?? [])
+      }
+      loading.value = false
+      return
+    }
+  } catch (e) {
+  }
+
+  // Fallback fetch (Vue / Vite)
+  try {
+    const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
+    const res = await fetch(`${base.replace(/\/$/,'')}/products`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const json = await res.json()
+    products.value = Array.isArray(json) ? json : (json.products ?? [])
+  } catch (err) {
+    console.error('Erreur fetch produits:', err)
+    products.value = [
+      {
+        product_id: 'fallback-1',
+        product_name: 'Produit indisponible',
+        product_price: 0,
+        product_imgurl: '/logo.svg',
+        product_description: 'Impossible de récupérer les produits.'
+      }
+    ]
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadProducts)
 </script>
 
 <style scoped>
@@ -167,14 +250,12 @@ const categories = [
   align-items: center;
   justify-content: flex-end;
 }
-
 .searchbar-container {
-  width: 200px; /* adapte la largeur à ta SearchBar */
+  width: 200px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
-
 .banner {
   width: 100vw;
   height: 120px;
@@ -247,11 +328,13 @@ const categories = [
   background: #EFEFEF;
   border-radius: 8px;
   margin-bottom: 8px;
+  object-fit: cover;
 }
 .product-title {
   font-size: 14px;
   color: #222;
   margin-bottom: 4px;
+  text-align: center;
 }
 .product-price {
   font-size: 13px;

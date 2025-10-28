@@ -1,10 +1,10 @@
 <script setup lang="ts">
 defineProps<{
   name: string
-  style?: string
+  variant?: string
   type?: 'button' | 'submit' | 'reset'
   disabled?: boolean
-  size?: 'large' | 'small'
+  size?: 'small' | 'large'
 }>()
 defineEmits<{ (e: 'click', event: MouseEvent): void }>()
 </script>
@@ -13,7 +13,7 @@ defineEmits<{ (e: 'click', event: MouseEvent): void }>()
   <button
     :type="type || 'button'"
     :disabled="disabled"
-    :class="[style, size]"
+    :class="[variant, size]"
     @click="$emit('click', $event)"
   >
     {{ name }}

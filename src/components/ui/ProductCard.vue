@@ -4,7 +4,7 @@
       <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
       <div class="product-title">{{ product.product_name }}</div>
       <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
-      <Button class="add-to-cart" size="sm" @click.stop="localAddToCart">Ajouter</Button>
+  <Button name="Ajouter" class="add-to-cart" @click.stop="localAddToCart" />
     </div>
   </NuxtLink>
 </template>

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import TextInput from '@/components/ui/Input.vue'
-import PrimaryButton from '@/components/ui/Button.vue'
+import PrimaryButton from '@/components/ui/PrimaryButton.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
@@ -47,7 +47,7 @@ async function onSubmit() {
     <img src="/logo.svg" alt="Markety" class="logo" />
 
     <div class="roles">
-      <Button name="Login" :style="role === 'login' ? 'customer' : 'secondary'" :size="role === 'login' ? undefined : 'small'" @click="role='login'" />
+  <Button name="Login" :variant="role === 'login' ? 'customer' : 'secondary'" @click="role='login'" />
     </div>
 
     <form class="form" @submit.prevent="onSubmit">

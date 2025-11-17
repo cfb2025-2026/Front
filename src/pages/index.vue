@@ -1,30 +1,7 @@
 <template>
   <div class="home-page">
     <!-- Header -->
-    <header class="header">
-      <img src="/logo.svg" alt="Markety" class="header-logo" />
-      <nav class="header-nav">
-        <a href="#">Mobilier</a>
-        <a href="#">Décoration</a>
-        <a href="#">Vaisselle</a>
-        <a href="#">Bijoux</a>
-        <a href="#">Linge de Maison</a>
-      </nav>
-      <div class="header-icons">
-        <div class="searchbar-container">
-          <button class="icon-btn" @click="showSearch = true" v-if="!showSearch" aria-label="Rechercher">
-            <SearchIcon />
-          </button>
-          <SearchBar
-            v-if="showSearch"
-            @search="onSearch"
-            placeholder="Rechercher un produit..."
-          />
-        </div>
-        <CartButton />
-        <NuxtLink to="/profil"><UserIcon /></NuxtLink>
-      </div>
-    </header>
+    <Navbar />
 
     <!-- Banner -->
     <section class="banner">
@@ -62,16 +39,11 @@
             <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
 
           <!-- bouton add-to-cart compact (utilise la classe button.add-to-cart du composant Button.vue) -->
-          <Button
-            variant="add-to-cart"
-            @click="addToCart(product)"
-          >
-            Ajouter au panier
-          </Button>
+          <Button name="Ajouter au panier" class="add-to-cart" @click="addToCart(product)" />
         </NuxtLink>
       </div>
 
-      <Button variant="secondary" class="see-more-btn">Voir plus de produits</Button>
+  <Button name="Voir plus de produits" class="secondary see-more-btn" />
     </section>
 
     <!-- Entreprise CTA -->
@@ -79,7 +51,7 @@
       <div class="cta-content">
         <div>
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
-          <Button variant="main-custumer">Devenez vendeur sur Markety !</Button>
+    <Button name="Devenez vendeur sur Markety !" class="customer" />
         </div>
       </div>
     </section>
@@ -113,12 +85,7 @@
 // Imports UI
 import { ref, onMounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
-import CartButton from '@/components/ui/CartButton.vue'
-import SearchBar from '@/components/ui/SearchBar.vue'
-import SearchIcon from '@/assets/icons/SearchIcon.vue'
-import UserIcon from '@/assets/icons/UserIcon.vue'
-import ProductCard from '@/components/ui/ProductCard.vue'
-
+import Navbar from '~/components/ui/Navbar.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -181,7 +148,7 @@ async function loadProducts() {
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
       const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch('/Product?select=*', {
+      const { data, error } = await useFetch('/products?select=*', {
         baseURL: base,
         onRequest ({ request, options }) {
           options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
@@ -244,10 +211,10 @@ onMounted(loadProducts)
   display: flex;
   flex-direction: column;
 }
-.header {
+/* .header {
   width: 99vw;
   background: #f5f5f5;
-  padding: 12px 0;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -274,7 +241,7 @@ onMounted(loadProducts)
   gap: 18px;
   align-items: center;
   justify-content: flex-end;
-}
+} */
 .searchbar-container {
   width: 200px;
   display: flex;

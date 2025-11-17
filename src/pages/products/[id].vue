@@ -48,8 +48,8 @@
         </div>
 
         <div class="actions">
-          <Button @click="addToCartWithQty">Ajouter au panier</Button>
-          <Button variant="outline" @click="buyNow">Acheter maintenant</Button>
+          <Button name="Ajouter au panier" @click="addToCartWithQty" />
+          <Button name="Acheter maintenant" class="secondary" @click="buyNow" />
         </div>
       </div>
     </div>
@@ -123,7 +123,7 @@ async function loadProductById(id: string) {
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
       const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch(`/Product?select=*&product_id=eq.${id}`, {
+      const { data, error } = await useFetch(`products?select=*&product_id=eq.${id}`, {
         baseURL: base,
         onRequest ({ request, options }: any) {
           options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)

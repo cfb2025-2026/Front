@@ -1,12 +1,6 @@
 <template>
   <div class="page-auth">
-    <Button
-      name="Acheteur"
-      style="Main button"
-      size="large"
-      type="button"
-      class="buyer-btn"
-    />
+    <Button name="Acheteur" type="button" class="buyer-btn customer" />
     <form class="login-form" @submit.prevent="onLogin">
       <Input
         v-model="email"
@@ -26,19 +20,8 @@
         required
         placeholder="Votre mot de passe"
       />
-      <Button
-        name="Connexion"
-        style="secondary"
-        size="large"
-        type="submit"
-      />
-      <Button
-        name="Inscription"
-        style="secondary"
-        size="small"
-        type="button"
-        disabled
-      />
+      <Button name="Connexion" class="secondary" type="submit" />
+      <Button name="Inscription" class="secondary" type="button" disabled />
     </form>
   </div>
 </template>

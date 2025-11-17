@@ -35,14 +35,12 @@ async function onSubmit() {
     <div class="roles">
       <Button
         name="Acheteur"
-        :style="role === 'acheteur' ? 'customer' : 'secondary'"
-        :size="role === 'acheteur' ? undefined : 'small'"
+        :variant="role === 'acheteur' ? 'customer' : 'secondary'"
         @click="role='acheteur'"
       />
       <Button
         name="Vendeur"
-        :style="role === 'vendeur' ? 'seller' : 'secondary'"
-        :size="role === 'vendeur' ? undefined : 'small'"
+        :variant="role === 'vendeur' ? 'seller' : 'secondary'"
         @click="role='vendeur'"
       />
     </div>

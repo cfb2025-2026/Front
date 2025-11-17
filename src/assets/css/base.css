@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Lemon&display=swap');
 
 :root {
   --bg: #ffffff;
@@ -10,6 +11,7 @@
   --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
   --radius: 16px;
   --font-family: 'Lexend', sans-serif;
+  --font-title: 'Lemon', serif;
   --main-color: #9EA18E;
   --secondary-color: #EFEFEF;
   --seller-color: #D6B7A0;

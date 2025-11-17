@@ -1,61 +1,91 @@
 <template>
-  
-  <div class="product-page">
-    <header class="header">
-      <img src="/logo.svg" alt="Markety" class="header-logo" />
-      <nav class="header-nav">
-        <a href="#">Mobilier</a>
-        <a href="#">Décoration</a>
-        <a href="#">Vaisselle</a>
-        <a href="#">Bijoux</a>
-        <a href="#">Linge de Maison</a>
-      </nav>
-      </header>
-    <div v-if="loading" class="center">Chargement…</div>
-
-    <div v-else-if="product" class="product-grid">
-      <div class="gallery">
-        <div class="main-image">
-          <img :src="mainImageSrc" :alt="product.product_name" />
-        </div>
-
-        <div class="thumbs">
-          <!-- si product.images existe et est un array, on l'utilise, sinon on répète product_imgurl -->
-          <button
-            v-for="(src, i) in imageList"
-            :key="i"
-            class="thumb"
-            type="button"
-            :aria-pressed="i === mainImageIndex"
-            @click="setMainImage(i)"
-          >
-            <img :src="src" :alt="product.product_name" />
-          </button>
-        </div>
-      </div>
-
-      <div class="details">
-        <div class="title-row">
-          <h1 class="name">{{ product.product_name }}</h1>
-          <div class="price">{{ formatPrice(product.product_price) }} €</div>
-        </div>
-
-        <p class="meta" v-if="product.product_description">{{ product.product_description }}</p>
-
-        <div class="qty-row">
-          <label>Quantité</label>
-          <QuantityControl v-model="qty" :min="1" />
-        </div>
-
-        <div class="actions">
-          <Button @click="addToCartWithQty">Ajouter au panier</Button>
-          <Button variant="outline" @click="buyNow">Acheter maintenant</Button>
-        </div>
-      </div>
+  <header class="navbar-container" role="navigation" aria-label="Main navigation">
+    <div class="navbar-left">
+      <NuxtLink to="/" class="logo-link"><img src="/logo.svg" alt="Logo" /></NuxtLink>
     </div>
+    <nav class="navbar-center" aria-hidden="false">
+      <ul class="nav-links">
+        <li><NuxtLink to="/mobilier" class="nav-link" :class="{ active: isActive('/mobilier') }">Mobilier</NuxtLink></li>
+        <li><NuxtLink to="/decoration" class="nav-link" :class="{ active: isActive('/decoration') }">Décoration</NuxtLink></li>
+        <li><NuxtLink to="/bijoux" class="nav-link" :class="{ active: isActive('/bijoux') }">Bijoux</NuxtLink></li>
+        <li><NuxtLink to="/vaisselle" class="nav-link" :class="{ active: isActive('/vaisselle') }">Vaisselle</NuxtLink></li>
+        <li><NuxtLink to="/linge-de-maison" class="nav-link" :class="{ active: isActive('/linge-de-maison') }">Linge de Maison</NuxtLink></li>
+      </ul>
+    </nav>
+    <div class="navbar-right">
+      <div class="searchbar-container">
+        <button
+          class="icon-btn"
+          @click="showSearch = true"
+          aria-label="Rechercher"
+          v-if="!showSearch"
+        >
+          <SearchIcon />
+        </button>
+        <SearchBar
+          v-if="showSearch"
+          @search="onSearch"
+          placeholder="Rechercher un produit..."
+        />
+      </div>
+      <CartButton :count="1" />
+      <NuxtLink to="/profil"><UserIcon /></NuxtLink>
+    </div>
+  </header>
 
-    <div v-else class="center">Produit introuvable. Vérifie l'ID dans l'URL.</div>
-  </div>
+  <main class="home-page">
+    <section class="banner">
+      <div class="banner-content">Bienvenue sur Markety !</div>
+    </section>
+
+    <section class="categories">
+      <h2>Catégories</h2>
+      <div class="categories-list">
+        <div v-for="cat in categories" :key="cat.name" class="category-card">
+          <img :src="cat.img" :alt="cat.name" />
+          <div class="category-label">{{ cat.name }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="product-page">
+      <div v-if="loading" class="center">Chargement…</div>
+      <div v-else-if="!product" class="center">Produit introuvable.</div>
+      <div v-else class="product-grid">
+        <div class="gallery">
+          <div class="main-image">
+            <img :src="mainImageSrc" :alt="product.product_name" />
+          </div>
+          <div class="thumbs">
+            <div
+              v-for="(img, i) in imageList"
+              :key="i"
+              class="thumb"
+              :class="{ selected: i === mainImageIndex }"
+              @click="setMainImage(i)"
+            >
+              <img :src="img" :alt="`Aperçu ${i+1}`" />
+            </div>
+          </div>
+        </div>
+        <div class="details">
+          <div class="title-row">
+            <h1 class="name">{{ product.product_name }}</h1>
+            <span class="price">{{ formatPrice(product.product_price) }} €</span>
+          </div>
+          <div class="meta" v-if="product.product_description">{{ product.product_description }}</div>
+          <div class="qty-row">
+            <span>Quantité :</span>
+            <QuantityControl v-model="qty" />
+          </div>
+          <div class="actions">
+            <Button name="Ajouter au panier" btnClass="add-to-cart" @click="addToCartWithQty()" />
+            <Button name="Acheter maintenant" btnClass="customer" @click="buyNow" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -63,8 +93,27 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import QuantityControl from '@/components/ui/Quantity.vue'
+import SearchIcon from '@/assets/icons/SearchIcon.vue'
+import SearchBar from '@/components/ui/SearchBar.vue'
+import CartButton from '@/components/ui/CartButton.vue'
+import UserIcon from '@/assets/icons/UserIcon.vue'
+
+const showSearch = ref(false)
+function onSearch(query: string) {
+  showSearch.value = false
+}
+
+const categories = [
+  { name: 'Mobilier', img: '/mobilier.svg' },
+  { name: 'Décoration', img: '/décoration.svg' },
+  { name: 'Vaisselle', img: '/vaisselle.svg' },
+  { name: 'Bijoux', img: '/bijoux.svg' },
+  { name: 'Linge de Maison', img: '/linge de maison.svg' },
+]
 
 const route = useRoute()
+const isActive = (path: string) => route.path === path
+
 const router = useRouter()
 const product = ref<any | null>(null)
 const loading = ref(false)
@@ -75,7 +124,6 @@ function formatPrice(v?: number | string) { return Number(v ?? 0).toFixed(2) }
 
 const imageList = computed(() => {
   if (!product.value) return [ '/logo.svg' ]
-  // support product.images array or single product_imgurl
   if (Array.isArray(product.value.images) && product.value.images.length) return product.value.images
   if (product.value.product_imgurl) return [product.value.product_imgurl]
   return ['/logo.svg']
@@ -123,7 +171,7 @@ async function loadProductById(id: string) {
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
       const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch(`/Product?select=*&product_id=eq.${id}`, {
+      const { data, error } = await useFetch(`products/${id}`, {
         baseURL: base,
         onRequest ({ request, options }: any) {
           options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
@@ -178,7 +226,6 @@ watch(
 </script>
 
 <style scoped>
-
 .header {
   width: 99vw;
   background: #f5f5f5;
@@ -225,5 +272,4 @@ watch(
   .product-grid { grid-template-columns: 1fr; }
   .main-image { min-height: 260px; }
 }
-
 </style>

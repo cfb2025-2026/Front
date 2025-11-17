@@ -16,7 +16,9 @@
         </nav>
 
         <div class="navbar-right">
-            <searchIcon />
+            <button class="search-trigger" aria-label="Ouvrir la recherche" @click="openSpotlight">
+                <searchIcon />
+            </button>
             <NuxtLink to="/profil"><UserIcon /></NuxtLink>
             <CartButton :count="1" />
             <!-- mobile toggle button -->
@@ -73,6 +75,8 @@
             </div>
         </transition>
     </teleport>
+
+    <SearchOverlay :visible="spotlightVisible" @close="closeSpotlight" />
 </template>
 
 <script setup>
@@ -81,6 +85,7 @@ import { useRoute } from 'vue-router'
 import searchIcon from '~/assets/icons/SearchIcon.vue'
 import UserIcon from '~/assets/icons/UserIcon.vue';
 import CartButton from './CartButton.vue';
+import SearchOverlay from './SearchOverlay.vue' // ajout
 
 const route = useRoute()
 const isActive = (path) => route.path === path
@@ -89,8 +94,17 @@ const mobileOpen = ref(false)
 const toggleMobile = () => { mobileOpen.value = !mobileOpen.value }
 const closeMobile = () => { mobileOpen.value = false }
 
+const spotlightVisible = ref(false)
+function openSpotlight() { spotlightVisible.value = true }
+function closeSpotlight() { spotlightVisible.value = false }
+
 function onKey(e) {
   if (e.key === 'Escape' && mobileOpen.value) closeMobile()
+  // Cmd+K / Ctrl+K
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault()
+    spotlightVisible.value = true
+  }
 }
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
@@ -267,5 +281,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 a:focus, button:focus {
     outline: 3px solid rgba(0, 120, 212, 0.15);
     outline-offset: 2px;
+}
+
+.search-trigger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
 }
 </style>

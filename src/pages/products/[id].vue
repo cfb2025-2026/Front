@@ -123,7 +123,7 @@ async function loadProductById(id: string) {
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
       const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch(`products?select=*&product_id=eq.${id}`, {
+      const { data, error } = await useFetch(`products/${id}`, {
         baseURL: base,
         onRequest ({ request, options }: any) {
           options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)

@@ -66,8 +66,8 @@
           <QuantityControl v-model="qty" />
         </div>
         <div class="actions">
-          <Button name="Ajouter au panier" btnClass="add-to-cart" @click="localAddToCart" />
-          <Button name="Acheter maintenant" btnClass="customer" @click="buyNow" />
+          <Button name="Ajouter au panier" @click="addToCartWithQty" />
+          <Button name="Acheter maintenant" class="secondary" @click="buyNow" />
         </div>
       </div>
     </div>

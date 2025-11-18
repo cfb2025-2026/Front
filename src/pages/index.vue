@@ -10,11 +10,30 @@
 
     <!-- Catégories -->
     <section class="categories">
-      <h2>Rechercher par catégorie</h2>
-      <div class="categories-list">
-        <div class="category-card" v-for="cat in categories" :key="cat.name">
-          <img :src="cat.img" :alt="cat.name" />
-          <div class="category-label">{{ cat.name }}</div>
+      <div class="categories-carousel">
+        <div class="carousel-container">
+          <h2>Rechercher par catégorie</h2>
+          <div class="carousel-controls" v-if="hasOverflow">
+            <button 
+              class="carousel-btn prev" 
+              @click="scrollCategories(-1)"
+              :disabled="isAtStart"
+            >
+              ‹
+            </button>
+            
+            <button 
+              class="carousel-btn next" 
+              @click="scrollCategories(1)"
+              :disabled="isAtEnd"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+
+        <div class="categories-list" ref="categoriesList">
+          <CategoryCard v-for="cat in categories" :key="cat.name" :category="cat" />
         </div>
       </div>
     </section>
@@ -62,10 +81,11 @@
 
 <script setup lang="ts">
 // Imports UI
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
 import Footer from '~/components/ui/Footer.vue'
+import CategoryCard from '~/components/ui/CategoryCard.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -79,7 +99,55 @@ const categories = [
   { name: 'Vaisselle', img: '/vaisselle.svg' },
   { name: 'Bijoux', img: '/bijoux.svg' },
   { name: 'Linge de Maison', img: '/linge de maison.svg' },
+  { name: 'Musique', img: '/musique.jpeg' },
+  // Ajoutez d'autres catégories pour tester le carousel
+  // { name: 'Livres', img: '/livres.svg' },
+  // { name: 'Jouets', img: '/jouets.svg' },
 ]
+
+const categoriesList = ref<HTMLElement | null>(null)
+const hasOverflow = ref(false)
+const isAtStart = ref(true)
+const isAtEnd = ref(false)
+
+function checkOverflow() {
+  if (categoriesList.value) {
+    const el = categoriesList.value
+    hasOverflow.value = el.scrollWidth > el.clientWidth
+    isAtStart.value = el.scrollLeft <= 1
+    isAtEnd.value = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1
+  }
+}
+
+function scrollCategories(direction: number) {
+  if (categoriesList.value) {
+    const scrollAmount = 600
+    categoriesList.value.scrollBy({
+      left: direction * scrollAmount,
+      behavior: 'smooth'
+    })
+    
+    setTimeout(checkOverflow, 300)
+  }
+}
+
+onMounted(() => {
+  checkOverflow()
+  window.addEventListener('resize', checkOverflow)
+  
+  if (categoriesList.value) {
+    categoriesList.value.addEventListener('scroll', checkOverflow)
+  }
+  
+  loadProducts()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkOverflow)
+  if (categoriesList.value) {
+    categoriesList.value.removeEventListener('scroll', checkOverflow)
+  }
+})
 
 type Product = {
   product_id: string
@@ -112,18 +180,15 @@ function addToCart(product: Product) {
       cart.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
     }
     localStorage.setItem('cart', JSON.stringify(cart))
-    // console feedback — remplace par un toast si tu as un système de notifications
     console.log('Produit ajouté au panier :', product.product_name)
   } catch (e) {
     console.error('Erreur ajout panier', e)
   }
 }
 
-// Try Nuxt useFetch first (Nuxt 3). If not available, fallback to window fetch.
 async function loadProducts() {
   loading.value = true
   try {
-    // Nuxt auto-imports if present
     const { useFetch, useRuntimeConfig } = await import('#imports') as any
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
@@ -147,8 +212,6 @@ async function loadProducts() {
     console.log('Error using useFetch', e);
   }
 }
-
-onMounted(loadProducts)
 </script>
 
 <style scoped>
@@ -168,6 +231,7 @@ onMounted(loadProducts)
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .banner {
@@ -183,39 +247,77 @@ onMounted(loadProducts)
   font-size: 18px;
   font-weight: 600;
 }
+
 .categories {
-  max-width: 1100px;
-  margin: 32px auto 0 auto;
+  max-width: 1300px;
   width: 100%;
+  padding: 32px 40px 0 40px;
 }
-.categories-list {
+
+.categories h2 {
   display: flex;
-  gap: 18px;
-  margin-top: 12px;
-  border: 2px solid #e8deb5ff;
-  border-radius: 12px;
-  padding: 12px;
-  background: #fff;
+  justify-content: space-between;
+  align-items: center;
 }
-.category-card {
+
+.categories-carousel {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 190px;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.carousel-controls {
+  display: flex;
+  gap: 8px;
+  align-self: flex-end;
+}
+
+.categories-list {
+  display: flex;
+  border: 1px solid var(--secondary-color);
+  border-radius: 5px;
+  padding: 12px;
+  background: #fff;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  flex: 1;
+  justify-content: space-evenly;
+}
+
+.carousel-btn {
+  background: var(--main-color);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
-.category-card img {
-  width: 100px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 8px;
-  background: #f5f5f5;
+
+.carousel-btn:hover:not(:disabled) {
+  background: #d4c89f;
+  transform: scale(1.1);
 }
-.category-label {
-  margin-top: 6px;
-  font-size: 14px;
-  color: #444;
+
+.carousel-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
+.carousel-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 button.customer {
   background-color: var(--main-color);
   color: white;
@@ -230,7 +332,7 @@ button.customer {
 }
 .products-list {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 18px;
   margin-top: 12px;
 }
@@ -267,7 +369,6 @@ button.customer {
   display: block;
 }
 
-/* petite adaptation si tu veux ajuster la taille du add-to-cart dans cette page */
 .product-card .add-to-cart {
   padding: 6px 18px;
   font-size: 14px;
@@ -278,6 +379,7 @@ button.customer {
   background: #f5f5f5;
   margin: 40px 0 0 0;
   padding: 24px 0;
+  width: 100%;
 }
 .cta-content {
   max-width: 1100px;

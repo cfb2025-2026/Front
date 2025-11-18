@@ -2,10 +2,13 @@ import { fileURLToPath } from 'node:url'
 
 export default defineNuxtConfig({
   srcDir: 'src',
+
   alias: {
     '@': fileURLToPath(new URL('./src', import.meta.url)), // assure l’alias @ → src/
   },
+
   css: ['@/assets/css/base.css'],
+
   app: {
     head: {
       title: 'Markety – Connexion',
@@ -16,5 +19,7 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' }
       ]
     }
-  }
+  },
+
+  modules: ['@nuxt/image']
 })

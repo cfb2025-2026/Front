@@ -39,6 +39,7 @@ const scrollToTop = () => {
 
 <style scoped>
 .footer {
+    width: 100%;
     border-top: 2px solid var(--main-color);
     display: grid;
     grid-template-columns: repeat(3, 1fr);

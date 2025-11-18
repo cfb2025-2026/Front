@@ -74,16 +74,21 @@
         </div>
       </div>
     </section>
-
+    
+    <StripeCheckout />
     <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
 // Imports UI
+
 import { ref, onMounted, onUnmounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
+import Footer from '~/components/ui/Footer.vue'
+import CategoryCard from '~/components/ui/CategoryCard.vue'
+import StripeCheckout from '~/components/ui/StripeCheckout.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {

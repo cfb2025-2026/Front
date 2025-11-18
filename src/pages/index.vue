@@ -56,28 +56,7 @@
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <img src="/logo.svg" alt="Markety" class="footer-logo" />
-      <div class="footer-links">
-        <div>
-          <strong>EXPLORER</strong>
-          <div>Mobilier</div>
-          <div>Décoration</div>
-          <div>Bijoux</div>
-          <div>Vaisselle</div>
-          <div>Linge de Maison</div>
-        </div>
-        <div>
-          <strong>CONTACT</strong>
-          <div>contact@markety.com</div>
-          <div>+33 1 23 45 67 89</div>
-        </div>
-      </div>
-      <div class="footer-copy">
-        Copyright © 2024 Markety. Tous droits réservés.
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -86,6 +65,7 @@
 import { ref, onMounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
+import Footer from '~/components/ui/Footer.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -150,7 +130,7 @@ async function loadProducts() {
       const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
       const { data, error } = await useFetch('products', {
         baseURL: base,
-        onRequest ({ request, options }) {
+        onRequest ({ request, options }: { request: Request; options: any }) {
           options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
           options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
         }
@@ -164,29 +144,7 @@ async function loadProducts() {
       return
     }
   } catch (e) {
-    // fallback below
-  }
-
-  // Fallback fetch (Vue / Vite)
-  try {
-    const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-    const res = await fetch(`${base.replace(/\/$/,'')}/products`)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const json = await res.json()
-    products.value = Array.isArray(json) ? json : (json.products ?? [])
-  } catch (err) {
-    console.error('Erreur fetch produits:', err)
-    products.value = [
-      {
-        product_id: 'fallback-1',
-        product_name: 'Produit indisponible',
-        product_price: 0,
-        product_imgurl: '/logo.svg',
-        product_description: 'Impossible de récupérer les produits.'
-      }
-    ]
-  } finally {
-    loading.value = false
+    console.log('Error using useFetch', e);
   }
 }
 
@@ -211,43 +169,7 @@ onMounted(loadProducts)
   display: flex;
   flex-direction: column;
 }
-/* .header {
-  width: 99vw;
-  background: #f5f5f5;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.header-logo {
-  height: 32px;
-  margin-left: 32px;
-}
-.header-nav {
-  display: flex;
-  margin-left: 150px;
-  gap: 30px;
-  justify-content: center;
-  flex: 1;
-}
-.header-nav a {
-  color: #222;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 15px;
-}
-.header-icons {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  justify-content: flex-end;
-} */
-.searchbar-container {
-  width: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
+
 .banner {
   width: 100vw;
   height: 120px;
@@ -367,36 +289,5 @@ button.customer {
 }
 .cta-content h3 {
   margin-bottom: 12px;
-}
-.footer {
-  width: 100vw;
-  background: #f5f5f5;
-  padding: 12px 0 6px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 32px;
-}
-.footer-logo {
-  display: block;
-  height: 28px;
-  margin-bottom: 8px;
-}
-.footer-links {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.footer-links div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 13px;
-  color: #444;
-}
-.footer-copy {
-  font-size: 12px;
-  color: #888;
-  margin-top: 4px;
 }
 </style>

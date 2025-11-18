@@ -84,8 +84,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
-import Footer from '~/components/ui/Footer.vue'
-import CategoryCard from '~/components/ui/CategoryCard.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -266,6 +264,10 @@ async function loadProducts() {
   flex-direction: column;
   gap: 12px;
   margin-top: 12px;
+  border: 2px solid #fcf6f6;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff
 }
 
 .carousel-controls {

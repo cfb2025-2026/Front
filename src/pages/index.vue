@@ -1,78 +1,91 @@
 <template>
-  <header class="navbar-container" role="navigation" aria-label="Main navigation">
-    <div class="navbar-left">
-      <NuxtLink to="/" class="logo-link"><img src="/logo.svg" alt="Logo" /></NuxtLink>
-    </div>
+  <div class="home-page">
+    <!-- Header -->
+    <Navbar />
 
-    <nav class="navbar-center" aria-hidden="false">
-      <ul class="nav-links">
-        <li><NuxtLink to="/mobilier" class="nav-link" :class="{ active: isActive('/mobilier') }">Mobilier</NuxtLink></li>
-        <li><NuxtLink to="/decoration" class="nav-link" :class="{ active: isActive('/decoration') }">Décoration</NuxtLink></li>
-        <li><NuxtLink to="/bijoux" class="nav-link" :class="{ active: isActive('/bijoux') }">Bijoux</NuxtLink></li>
-        <li><NuxtLink to="/vaisselle" class="nav-link" :class="{ active: isActive('/vaisselle') }">Vaisselle</NuxtLink></li>
-        <li><NuxtLink to="/linge-de-maison" class="nav-link" :class="{ active: isActive('/linge-de-maison') }">Linge de Maison</NuxtLink></li>
-      </ul>
-    </nav>
-
-    <div class="navbar-right">
-      <div class="searchbar-container">
-        <button
-          class="icon-btn"
-          @click="showSearch = true"
-          aria-label="Rechercher"
-          v-if="!showSearch"
-        >
-          <SearchIcon />
-        </button>
-        <SearchBar
-          v-if="showSearch"
-          @search="onSearch"
-          placeholder="Rechercher un produit..."
-        />
-      </div>
-      <CartButton :count="1" />
-      <NuxtLink to="/profil"><UserIcon /></NuxtLink>
-    </div>
-  </header>
-
-  <main class="home-page">
+    <!-- Banner -->
     <section class="banner">
-      <div class="banner-content">Bienvenue sur Markety !</div>
+      <div class="banner-content">BANNIÈRE</div>
     </section>
 
+    <!-- Catégories -->
     <section class="categories">
-      <h2>Catégories</h2>
+      <h2>Rechercher par catégorie</h2>
       <div class="categories-list">
-        <div v-for="cat in categories" :key="cat.name" class="category-card">
+        <div class="category-card" v-for="cat in categories" :key="cat.name">
           <img :src="cat.img" :alt="cat.name" />
           <div class="category-label">{{ cat.name }}</div>
         </div>
       </div>
     </section>
 
+    <!-- Nouveautés -->
     <section class="products">
       <h2>Nouveautés</h2>
-      <div v-if="loading" class="center">Chargement…</div>
-      <div v-else class="products-list">
-        <ProductCard
-          v-for="product in products"
-          :key="product.product_id"
-          :product="product"
-        />
+
+      <div v-if="loading" class="products-list">
+        <!-- simple skeleton fallback -->
+        <div class="product-card" v-for="n in 3" :key="'sk-'+n">
+          <div class="product-img" style="opacity:.15"></div>
+          <div class="product-title" style="height:14px; width:80%; background:#eee;margin-bottom:6px"></div>
+          <div class="product-price" style="height:12px; width:50%; background:#eee"></div>
+        </div>
+      </div>
+
+      <div v-else class="products-list"> 
+          <NuxtLink class="product-card" v-for="product in products" :key="product.product_id" :to="`/products/${product.product_id}`">
+            <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
+            <div class="product-title">{{ product.product_name }}</div>
+            <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
+
+          <!-- bouton add-to-cart compact (utilise la classe button.add-to-cart du composant Button.vue) -->
+          <Button name="Ajouter au panier" class="add-to-cart" @click="addToCart(product)" />
+        </NuxtLink>
+      </div>
+
+  <Button name="Voir plus de produits" class="secondary see-more-btn" />
+    </section>
+
+    <!-- Entreprise CTA -->
+    <section class="cta">
+      <div class="cta-content">
+        <div>
+          <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
+    <Button name="Devenez vendeur sur Markety !" class="customer" />
+        </div>
       </div>
     </section>
-  </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <img src="/logo.svg" alt="Markety" class="footer-logo" />
+      <div class="footer-links">
+        <div>
+          <strong>EXPLORER</strong>
+          <div>Mobilier</div>
+          <div>Décoration</div>
+          <div>Bijoux</div>
+          <div>Vaisselle</div>
+          <div>Linge de Maison</div>
+        </div>
+        <div>
+          <strong>CONTACT</strong>
+          <div>contact@markety.com</div>
+          <div>+33 1 23 45 67 89</div>
+        </div>
+      </div>
+      <div class="footer-copy">
+        Copyright © 2024 Markety. Tous droits réservés.
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script setup lang="ts">
+// Imports UI
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
-import CartButton from '@/components/ui/CartButton.vue'
-import SearchBar from '@/components/ui/SearchBar.vue'
-import SearchIcon from '@/assets/icons/SearchIcon.vue'
-import UserIcon from '@/assets/icons/UserIcon.vue'
-import ProductCard from '@/components/ui/ProductCard.vue'
+import Navbar from '~/components/ui/Navbar.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -101,11 +114,13 @@ type Product = {
 const products = ref<Product[]>([])
 const loading = ref(true)
 
+// helper to format price safely
 function formatPrice(val: number | string | undefined) {
   const n = Number(val ?? 0)
   return n.toFixed(2)
 }
 
+// add to cart (localStorage) - simple implementation
 function addToCart(product: Product) {
   try {
     const raw = localStorage.getItem('cart') || '[]'
@@ -117,22 +132,25 @@ function addToCart(product: Product) {
       cart.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
     }
     localStorage.setItem('cart', JSON.stringify(cart))
+    // console feedback — remplace par un toast si tu as un système de notifications
     console.log('Produit ajouté au panier :', product.product_name)
   } catch (e) {
     console.error('Erreur ajout panier', e)
   }
 }
 
+// Try Nuxt useFetch first (Nuxt 3). If not available, fallback to window fetch.
 async function loadProducts() {
   loading.value = true
   try {
+    // Nuxt auto-imports if present
     const { useFetch, useRuntimeConfig } = await import('#imports') as any
     if (useFetch && useRuntimeConfig) {
       const config = useRuntimeConfig()
       const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch('/products', {
+      const { data, error } = await useFetch('products', {
         baseURL: base,
-        onRequest({ request, options }: { request: any; options: any }) {
+        onRequest ({ request, options }) {
           options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
           options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
         }
@@ -149,6 +167,7 @@ async function loadProducts() {
     // fallback below
   }
 
+  // Fallback fetch (Vue / Vite)
   try {
     const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
     const res = await fetch(`${base.replace(/\/$/,'')}/products`)
@@ -172,16 +191,7 @@ async function loadProducts() {
 }
 
 onMounted(loadProducts)
-
-// Fonction d'activation des liens de navigation
-import { useRoute as useVueRoute } from 'vue-router'
-const route = useVueRoute()
-function isActive(path: string) {
-  return route.path === path
-}
 </script>
-
-
 
 <style scoped>
 .icon-btn {
@@ -201,10 +211,10 @@ function isActive(path: string) {
   display: flex;
   flex-direction: column;
 }
-.header {
+/* .header {
   width: 99vw;
   background: #f5f5f5;
-  padding: 12px 0;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -231,7 +241,7 @@ function isActive(path: string) {
   gap: 18px;
   align-items: center;
   justify-content: flex-end;
-}
+} */
 .searchbar-container {
   width: 200px;
   display: flex;
@@ -260,10 +270,10 @@ function isActive(path: string) {
   display: flex;
   gap: 18px;
   margin-top: 12px;
-  border: 2px solid #e8deb5ff;
+  border: 2px solid #fcf6f6;
   border-radius: 12px;
   padding: 12px;
-  background: #fff;
+  background: #fff
 }
 .category-card {
   display: flex;

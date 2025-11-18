@@ -6,7 +6,7 @@
     </button>
 
     <!-- le drawer est géré ici et téléporté dans body -->
-    <CartDrawer :visible="visible" @update:visible="visible = $event" @close="visible = false">
+    <CartDrawer :visible="visible" @update:visible="visible = $event" @close="visible = false" :count="count">
       <!-- slot pour contenu du panier si besoin -->
     </CartDrawer>
   </div>
@@ -45,11 +45,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   display: inline-flex;
   align-items: center;
   font-family: var(--font-family);
-}
-.cart-button svg {
-  width: 16px !important;
-  height: 16px !important;
-  display: block;
 }
 
 .cart-badge {

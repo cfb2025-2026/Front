@@ -1,7 +1,9 @@
 <template>
   <header class="navbar-container" role="navigation" aria-label="Main navigation">
     <div class="navbar-left">
-      <NuxtLink to="/" class="logo-link"><img src="/logo.svg" alt="Logo" /></NuxtLink>
+      <NuxtLink to="/" class="logo-link">
+        <img src="/logo.svg" alt="Logo" class="logo-img" />
+      </NuxtLink>
     </div>
     <nav class="navbar-center" aria-hidden="false">
       <ul class="nav-links">
@@ -33,58 +35,42 @@
     </div>
   </header>
 
-  <main class="home-page">
-    <section class="banner">
-      <div class="banner-content">Bienvenue sur Markety !</div>
-    </section>
-
-    <section class="categories">
-      <h2>Catégories</h2>
-      <div class="categories-list">
-        <div v-for="cat in categories" :key="cat.name" class="category-card">
-          <img :src="cat.img" :alt="cat.name" />
-          <div class="category-label">{{ cat.name }}</div>
+  <main class="product-page">
+    <div v-if="loading" class="center">Chargement…</div>
+    <div v-else-if="!product" class="center">Produit introuvable.</div>
+    <div v-else class="product-grid">
+      <div class="gallery">
+        <div class="main-image">
+          <img :src="mainImageSrc" :alt="product.product_name" />
         </div>
-      </div>
-    </section>
-
-    <section class="product-page">
-      <div v-if="loading" class="center">Chargement…</div>
-      <div v-else-if="!product" class="center">Produit introuvable.</div>
-      <div v-else class="product-grid">
-        <div class="gallery">
-          <div class="main-image">
-            <img :src="mainImageSrc" :alt="product.product_name" />
-          </div>
-          <div class="thumbs">
-            <div
-              v-for="(img, i) in imageList"
-              :key="i"
-              class="thumb"
-              :class="{ selected: i === mainImageIndex }"
-              @click="setMainImage(i)"
-            >
-              <img :src="img" :alt="`Aperçu ${i+1}`" />
-            </div>
-          </div>
-        </div>
-        <div class="details">
-          <div class="title-row">
-            <h1 class="name">{{ product.product_name }}</h1>
-            <span class="price">{{ formatPrice(product.product_price) }} €</span>
-          </div>
-          <div class="meta" v-if="product.product_description">{{ product.product_description }}</div>
-          <div class="qty-row">
-            <span>Quantité :</span>
-            <QuantityControl v-model="qty" />
-          </div>
-          <div class="actions">
-            <Button name="Ajouter au panier" btnClass="add-to-cart" @click="addToCartWithQty()" />
-            <Button name="Acheter maintenant" btnClass="customer" @click="buyNow" />
+        <div class="thumbs">
+          <div
+            v-for="(img, i) in imageList"
+            :key="i"
+            class="thumb"
+            :class="{ selected: i === mainImageIndex }"
+            @click="setMainImage(i)"
+          >
+            <img :src="img" :alt="`Aperçu ${i+1}`" />
           </div>
         </div>
       </div>
-    </section>
+      <div class="details">
+        <div class="title-row">
+          <h1 class="name">{{ product.product_name }}</h1>
+          <span class="price">{{ formatPrice(product.product_price) }} €</span>
+        </div>
+        <div class="meta" v-if="product.product_description">{{ product.product_description }}</div>
+        <div class="qty-row">
+          <span>Quantité :</span>
+          <QuantityControl v-model="qty" />
+        </div>
+        <div class="actions">
+          <Button name="Ajouter au panier" btnClass="add-to-cart" @click="localAddToCart" />
+          <Button name="Acheter maintenant" btnClass="customer" @click="buyNow" />
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -102,14 +88,6 @@ const showSearch = ref(false)
 function onSearch(query: string) {
   showSearch.value = false
 }
-
-const categories = [
-  { name: 'Mobilier', img: '/mobilier.svg' },
-  { name: 'Décoration', img: '/décoration.svg' },
-  { name: 'Vaisselle', img: '/vaisselle.svg' },
-  { name: 'Bijoux', img: '/bijoux.svg' },
-  { name: 'Linge de Maison', img: '/linge de maison.svg' },
-]
 
 const route = useRoute()
 const isActive = (path: string) => route.path === path
@@ -224,52 +202,163 @@ watch(
   }
 )
 </script>
-
 <style scoped>
-.header {
-  width: 99vw;
-  background: #f5f5f5;
-  padding: 12px 0;
+
+.logo-link img,
+.logo-img {
+  height: 28px !important;
+  width: auto !important;
+  max-height: 28px !important;
+  /* Force la taille du logo Markety */
+}
+
+
+.product-page {
+  padding: 10px 20px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+
+
+
+.main-image img {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.thumb {
+  display: flex;
+  gap: 10px;
+  border: 2px solid transparent;
+  padding: 2px;
+  cursor: pointer;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+
+
+.title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
 }
-.header-logo {
-  height: 32px;
-  margin-left: 32px;
-}
-.header-nav {
-  display: flex;
-  margin-left: 150px;
-  gap: 30px;
-  justify-content: center;
+
+.name {
+  font-size: 22px;
+  margin: 0;
+  line-height: 1.1;
   flex: 1;
 }
-.product-page { max-width: 1100px; margin: 24px auto; padding: 16px; box-sizing: border-box; }
-.center { text-align: center; padding: 40px 0; color: #666; }
+.price {
+  font-weight: 700;
+  color: #4b5563;
+  font-size: 20px;
+  white-space: nowrap;
+}
 
-.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.meta {
+  color: #374151;
+  margin-top: 6px;
+}
 
-.gallery { display:flex; flex-direction:column; gap:12px; }
-.main-image { background:#f4f4f4; border-radius:10px; padding:18px; display:flex; align-items:center; justify-content:center; min-height:360px; }
-.main-image img { max-width:100%; max-height:520px; object-fit:contain; border-radius:8px; }
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
 
-.thumbs { display:flex; gap:8px; margin-top:6px; }
-.thumb { background:#fff; border:1px solid #eee; padding:6px; width:64px; height:64px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
-.thumb img { max-width:100%; max-height:100%; object-fit:cover; border-radius:4px; }
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background-color: #fff;
+    width: 100%;
+    color: var(--text-color);
+    position: relative;
+    z-index: 30;
+}
 
-.details { display:flex; flex-direction:column; gap:14px; }
-.title-row { display:flex; align-items:flex-start; gap:12px; }
-.name { font-size:22px; margin:0; line-height:1.1; flex:1; }
-.price { font-weight:700; color:#4b5563; font-size:20px; white-space:nowrap; }
+.navbar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-.meta { color:#374151; margin-top:6px; }
+.nav-links {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
-.qty-row { display:flex; align-items:center; gap:12px; margin-top:6px; }
-.actions { display:flex; gap:12px; margin-top:8px; }
+.nav-links li {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-link {
+    position: relative;
+    text-decoration: none;
+    color: var(--text-color);
+    padding-bottom: 6px;
+    display: inline-block;
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--main-color);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 220ms ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    transform: scaleX(1);
+}
+
+/* right section */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
 
 @media (max-width: 900px) {
-  .product-grid { grid-template-columns: 1fr; }
-  .main-image { min-height: 260px; }
+    .nav-links { gap: 20px; }
+    .navbar-container { padding: 16px 20px; }
+}
+
+.search-trigger {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
 }
 </style>

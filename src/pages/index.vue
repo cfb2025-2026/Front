@@ -42,24 +42,23 @@
     <section class="products">
       <h2>Nouveautés</h2>
 
-      <div v-if="loading" class="products-list">
-        <!-- simple skeleton fallback -->
-        <div class="product-card" v-for="n in 3" :key="'sk-'+n">
-          <div class="product-img" style="opacity:.15"></div>
-          <div class="product-title" style="height:14px; width:80%; background:#eee;margin-bottom:6px"></div>
-          <div class="product-price" style="height:12px; width:50%; background:#eee"></div>
-        </div>
-      </div>
-
-      <div v-else class="products-list"> 
-          <NuxtLink class="product-card" v-for="product in products" :key="product.product_id" :to="`/products/${product.product_id}`">
-            <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
-            <div class="product-title">{{ product.product_name }}</div>
-            <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
-
-          <!-- bouton add-to-cart compact (utilise la classe button.add-to-cart du composant Button.vue) -->
-          <Button name="Ajouter au panier" class="add-to-cart" @click="addToCart(product)" />
-        </NuxtLink>
+      <div class="products-list">
+        <!-- Skeleton cards pendant le chargement -->
+        <ProductCard
+          v-if="loading"
+          v-for="n in 6"
+          :key="'skeleton-' + n"
+          :is-loading="true"
+        />
+        
+        <!-- Cartes produits -->
+        <ProductCard
+          v-else
+          v-for="product in products"
+          :key="product.product_id"
+          :product="product"
+          @add-to-cart="addToCart"
+        />
       </div>
 
   <Button name="Voir plus de produits" class="secondary see-more-btn" />
@@ -86,6 +85,7 @@ import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
 import Footer from '~/components/ui/Footer.vue'
 import CategoryCard from '@/components/ui/CategoryCard.vue'
+import ProductCard from '~/components/ui/ProductCard.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -94,15 +94,12 @@ function onSearch(query: string) {
 }
 
 const categories = [
-  { name: 'Mobilier', img: '/mobilier.svg' },
-  { name: 'Décoration', img: '/décoration.svg' },
-  { name: 'Vaisselle', img: '/vaisselle.svg' },
-  { name: 'Bijoux', img: '/bijoux.svg' },
-  { name: 'Linge de Maison', img: '/linge de maison.svg' },
-  { name: 'Musique', img: '/musique.jpeg' },
-  // Ajoutez d'autres catégories pour tester le carousel
-  // { name: 'Livres', img: '/livres.svg' },
-  // { name: 'Jouets', img: '/jouets.svg' },
+  { name: 'Mobilier', img: '/mobilier.jpg' },
+  { name: 'Décoration', img: '/decoration.jpg' },
+  { name: 'Vaisselle', img: '/vaisselle.jpg' },
+  { name: 'Bijoux', img: '/bijoux.jpg' },
+  { name: 'Linge de Maison', img: '/linge_de_maison.jpg' },
+  { name: 'Musique', img: '/musique.jpg' },
 ]
 
 const categoriesList = ref<HTMLElement | null>(null)
@@ -177,7 +174,13 @@ function addToCart(product: Product) {
     if (idx >= 0) {
       cart[idx].qty = (cart[idx].qty ?? 1) + 1
     } else {
-      cart.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
+      cart.push({ 
+        product_id: product.product_id, 
+        product_name: product.product_name, 
+        product_price: product.product_price, 
+        product_imgurl: product.product_imgurl, 
+        qty: 1 
+      })
     }
     localStorage.setItem('cart', JSON.stringify(cart))
     console.log('Produit ajouté au panier :', product.product_name)
@@ -186,30 +189,33 @@ function addToCart(product: Product) {
   }
 }
 
+
 async function loadProducts() {
-  loading.value = true
+  loading.value = true;
   try {
-    const { useFetch, useRuntimeConfig } = await import('#imports') as any
-    if (useFetch && useRuntimeConfig) {
-      const config = useRuntimeConfig()
-      const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch('products', {
-        baseURL: base,
-        onRequest ({ request, options }: { request: Request; options: any }) {
-          options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
-          options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
-        }
-      })
-      if (error?.value) {
-        console.error('useFetch error:', error.value)
-      } else if (data?.value) {
-        products.value = Array.isArray(data.value) ? data.value : (data.value.products ?? [])
+    const base = import.meta.env.VITE_API_BASE_URL || '';
+    const apiKey = import.meta.env.VITE_API_KEY || '';
+    
+    const response = await fetch(`${base}products`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'apikey': apiKey,
+        'Content-Type': 'application/json'
       }
-      loading.value = false
-      return
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    const data = await response.json();
+    products.value = Array.isArray(data) ? data : (data.products ?? []);
+    console.log('Produits chargés :', products.value);
   } catch (e) {
-    console.log('Error using useFetch', e);
+    console.error('Error loading products:', e);
+    products.value = [];
+  } finally {
+    loading.value = false;
   }
 }
 </script>
@@ -266,7 +272,6 @@ async function loadProducts() {
   flex-direction: column;
   gap: 12px;
   margin-top: 12px;
-  border: 2px solid #fcf6f6;
   border-radius: 12px;
   padding: 12px;
   background: #fff
@@ -336,19 +341,11 @@ button.customer {
 }
 .products-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 18px;
   margin-top: 12px;
 }
-.product-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+
 .product-img {
   width: 100px;
   height: 100px;

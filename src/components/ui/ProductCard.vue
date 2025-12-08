@@ -34,6 +34,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from './Button.vue'
+import { useCart } from '@/composables/useCart'
 
 const props = defineProps({
   product: {
@@ -45,14 +46,10 @@ const props = defineProps({
     default: false
   }
 })
-// console log props for debugging when available
-if (props.product) {
-  console.log('ProductCard props.product:', props.product)
-}
-const emit = defineEmits(['add-to-cart'])
 
 const router = useRouter()
 const isAddingToCart = ref(false)
+const { addToCart } = useCart() // Use the composable
 
 const handleCardClick = () => {
   if (!props.isLoading && props.product) {
@@ -64,7 +61,9 @@ const handleAddToCart = async () => {
   if (isAddingToCart.value) return
   
   isAddingToCart.value = true
-  emit('add-to-cart', props.product)
+  
+  // Use the centralized logic
+  addToCart(props.product)
   
   // Simuler un délai pour l'ajout
   setTimeout(() => {

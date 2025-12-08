@@ -57,7 +57,6 @@
           v-for="product in products"
           :key="product.product_id"
           :product="product"
-          @add-to-cart="addToCart"
         />
       </div>
 

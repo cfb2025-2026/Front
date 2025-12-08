@@ -28,7 +28,11 @@
                 <div><span class="total-value">{{ total }}</span><span class="devise"> €</span></div>
               </div>
               <div class="actions">
-                  <Button class="checkout-btn customer" @click="goToPayment" name="Passer la commande" />
+                  <Button
+                    name="Passer la commande"
+                    variant="customer"
+                    @click="goToPayment"
+                  />
               </div>
             </div>
           </div>

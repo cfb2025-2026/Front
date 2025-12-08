@@ -5,7 +5,7 @@
 
     <!-- Banner -->
     <section class="banner">
-      <div class="banner-content">BANNIÈRE</div>
+      <img src="/banner.png" alt="Banner Markety" class="banner-content"/>
     </section>
 
     <!-- Catégories -->
@@ -54,22 +54,28 @@
         <!-- Cartes produits -->
         <ProductCard
           v-else
-          v-for="product in products"
+          v-for="(product, idx) in products.slice(0, visibleCount)"
           :key="product.product_id"
           :product="product"
         />
       </div>
 
-  <Button name="Voir plus de produits" class="secondary see-more-btn" />
+      <Button 
+        v-if="visibleCount < products.length" 
+        name="Voir plus de produits" 
+        class="customer see-more-btn"
+        @click="showMoreProducts"
+      />
     </section>
 
     <!-- Entreprise CTA -->
     <section class="cta">
       <div class="cta-content">
-        <div>
+        <div class="cta-text">
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
-    <Button name="Devenez vendeur sur Markety !" class="customer" />
+          <Button name="Devenez vendeur sur Markety !" class="customer" />
         </div>
+        <img src="/seller-banner.jpg" alt="CTA" class="cta-img" />
       </div>
     </section>
 
@@ -158,6 +164,35 @@ type Product = {
 const products = ref<Product[]>([])
 const loading = ref(true)
 
+const PRODUCTS_PER_ROW = ref(4)
+const INITIAL_VISIBLE = ref(8)
+const visibleCount = ref(INITIAL_VISIBLE.value)
+
+function updateProductsPerRow() {
+  // Largeur min d'une carte produit (ex: 220px + gap)
+  const cardMinWidth = 220
+  const grid = document.querySelector('.products-list')
+  const gridWidth = grid ? grid.clientWidth : window.innerWidth
+  const perRow = Math.max(1, Math.floor(gridWidth / cardMinWidth))
+  PRODUCTS_PER_ROW.value = perRow
+  INITIAL_VISIBLE.value = perRow * 2
+  visibleCount.value = INITIAL_VISIBLE.value
+}
+
+onMounted(() => {
+  // ...existing code...
+  updateProductsPerRow()
+  window.addEventListener('resize', updateProductsPerRow)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateProductsPerRow)
+})
+
+function showMoreProducts() {
+  visibleCount.value = products.value.length
+}
+
 // helper to format price safely
 function formatPrice(val: number | string | undefined) {
   const n = Number(val ?? 0)
@@ -241,16 +276,18 @@ async function loadProducts() {
 
 .banner {
   width: 100vw;
-  height: 120px;
+  height: 60vh;
   background: #EFEFEF;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 .banner-content {
-  color: #888;
-  font-size: 18px;
-  font-weight: 600;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 20% 70%;
 }
 
 .categories {
@@ -263,6 +300,11 @@ async function loadProducts() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.categories h2,
+.products h2 {
+  font-family: var(--font-title);
+  font-size: 16px;
 }
 
 .categories-carousel {
@@ -342,7 +384,9 @@ button.customer {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 18px;
-  margin-top: 12px;
+  margin: 12px 0 25px;
+  justify-items: center;
+  justify-content: center; /* Ajouté pour centrer la grille */
 }
 
 .product-img {
@@ -365,8 +409,16 @@ button.customer {
   margin-bottom: 8px;
 }
 .see-more-btn {
-  margin: 24px auto 0 auto;
   display: block;
+  width: fit-content;
+  margin: 0 auto;
+  margin-bottom: 40px; /* Ajouté pour l'espace sous le bouton */
+}
+
+@media (max-width: 600px) {
+  .see-more-btn {
+    margin-bottom: 24px; /* Un peu moins de marge sur mobile */
+  }
 }
 
 .product-card .add-to-cart {
@@ -377,19 +429,85 @@ button.customer {
 
 .cta {
   background: #f5f5f5;
-  margin: 40px 0 0 0;
-  padding: 24px 0;
   width: 100%;
+  display: flex;
+  justify-content: center;
 }
 .cta-content {
   max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
+  width: 100%;
   align-items: center;
+  display: flex;
   gap: 32px;
   justify-content: space-between;
 }
+.cta-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 30px;
+}
 .cta-content h3 {
   margin-bottom: 12px;
+  font-family: var(--font-title);
+  text-align: center;
+  font-size: 18px;
+  color: var(--text-color);
+}
+
+/* Responsive pour la bannière */
+@media (max-width: 900px) {
+  .banner {
+    height: 35vh;
+  }
+  .categories {
+    padding: 24px 10px 0 10px;
+  }
+  .cta-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .cta-content > div {
+    width: 100%;
+  }
+}
+
+/* Responsive pour mobile */
+@media (max-width: 600px) {
+  .banner {
+    height: 24vh;
+  }
+  .categories {
+    padding: 12px 2vw 0 2vw;
+  }
+  .products {
+    padding: 0 2vw;
+  }
+  .products-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    justify-content: center; /* Ajouté pour centrer sur mobile aussi */
+  }
+  .cta-content {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .cta-content > div {
+    width: 100%;
+  }
+  .cta-img {
+    display: none !important; /* Masque l'image CTA sur mobile */
+  }
+}
+
+/* Ajuste la taille des images de produit sur mobile */
+@media (max-width: 400px) {
+  .product-img {
+    width: 80px;
+    height: 80px;
+  }
 }
 </style>

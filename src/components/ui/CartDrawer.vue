@@ -28,7 +28,7 @@
                 <div><span class="total-value">{{ total }}</span><span class="devise"> €</span></div>
               </div>
               <div class="actions">
-                <Button name="Passer la commande" variant="customer" />
+                  <Button class="checkout-btn customer" @click="goToPayment" name="Passer la commande" />
               </div>
             </div>
           </div>
@@ -92,6 +92,10 @@ function removeItem(id) {
 const total = computed(() =>
   items.value.reduce((s, it) => s + (Number(it.product_price || 0) * (Number(it.qty || 0))), 0).toFixed(2)
 )
+
+const goToPayment = () => {
+  window.location.href = '/payment'
+}
 
 onMounted(loadCart)
 </script>

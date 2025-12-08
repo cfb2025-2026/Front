@@ -1,40 +1,5 @@
 <template>
-  <header class="navbar-container" role="navigation" aria-label="Main navigation">
-    <div class="navbar-left">
-      <NuxtLink to="/" class="logo-link">
-        <img src="/logo.svg" alt="Logo" class="logo-img" />
-      </NuxtLink>
-    </div>
-    <nav class="navbar-center" aria-hidden="false">
-      <ul class="nav-links">
-        <li><NuxtLink to="/mobilier" class="nav-link" :class="{ active: isActive('/mobilier') }">Mobilier</NuxtLink></li>
-        <li><NuxtLink to="/decoration" class="nav-link" :class="{ active: isActive('/decoration') }">Décoration</NuxtLink></li>
-        <li><NuxtLink to="/bijoux" class="nav-link" :class="{ active: isActive('/bijoux') }">Bijoux</NuxtLink></li>
-        <li><NuxtLink to="/vaisselle" class="nav-link" :class="{ active: isActive('/vaisselle') }">Vaisselle</NuxtLink></li>
-        <li><NuxtLink to="/linge-de-maison" class="nav-link" :class="{ active: isActive('/linge-de-maison') }">Linge de Maison</NuxtLink></li>
-      </ul>
-    </nav>
-    <div class="navbar-right">
-      <div class="searchbar-container">
-        <button
-          class="icon-btn"
-          @click="showSearch = true"
-          aria-label="Rechercher"
-          v-if="!showSearch"
-        >
-          <SearchIcon />
-        </button>
-        <SearchBar
-          v-if="showSearch"
-          @search="onSearch"
-          placeholder="Rechercher un produit..."
-        />
-      </div>
-      <CartButton :count="1" />
-      <NuxtLink to="/profil"><UserIcon /></NuxtLink>
-    </div>
-  </header>
-
+<Navbar :showSearch="showSearch" @search="onSearch" />
   <main class="product-page">
     <div v-if="loading" class="center">Chargement…</div>
     <div v-else-if="!product" class="center">Produit introuvable.</div>
@@ -56,22 +21,26 @@
         </div>
       </div>
       <div class="details">
-        <div class="title-row">
-          <h1 class="name">{{ product.product_name }}</h1>
-          <span class="price">{{ formatPrice(product.product_price) }} €</span>
+        <div class="info">
+          <div class="title-row">
+            <h1 class="name">{{ product.product_name }}</h1>
+            <span class="price">{{ formatPrice(product.product_price) }} €</span>
+          </div>
+          <div class="meta" v-if="product.product_description">{{ product.product_description }}</div>
+          <div class="qty-row">
+            <span>Quantité</span>
+            <QuantityControl v-model="qty" />
+          </div>
         </div>
-        <div class="meta" v-if="product.product_description">{{ product.product_description }}</div>
-        <div class="qty-row">
-          <span>Quantité :</span>
-          <QuantityControl v-model="qty" />
-        </div>
+
         <div class="actions">
-          <Button name="Ajouter au panier" @click="addToCartWithQty" />
+          <Button name="Ajouter au panier" class="customer" @click="addToCartWithQty" />
           <Button name="Acheter maintenant" class="secondary" @click="buyNow" />
         </div>
       </div>
     </div>
   </main>
+  <Footer />
 </template>
 
 <script setup lang="ts">
@@ -79,10 +48,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from '@/components/ui/Button.vue'
 import QuantityControl from '@/components/ui/Quantity.vue'
-import SearchIcon from '@/assets/icons/SearchIcon.vue'
-import SearchBar from '@/components/ui/SearchBar.vue'
-import CartButton from '@/components/ui/CartButton.vue'
-import UserIcon from '@/assets/icons/UserIcon.vue'
+import Navbar from '~/components/ui/Navbar.vue'
+import Footer from '~/components/ui/Footer.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -159,6 +126,7 @@ async function loadProductById(id: string) {
       if (error?.value) console.error('useFetch error:', error.value)
       else if (data?.value) product.value = Array.isArray(data.value) ? data.value[0] : data.value
       loading.value = false
+      console.log('Produit chargé avec useFetch :', product.value)
       return
     }
   } catch (e) {
@@ -203,35 +171,30 @@ watch(
 )
 </script>
 <style scoped>
-
-.logo-link img,
-.logo-img {
-  height: 28px !important;
-  width: auto !important;
-  max-height: 28px !important;
-  /* Force la taille du logo Markety */
+Button {
+  width: fit-content;
 }
-
-
 .product-page {
-  padding: 10px 20px;
+  padding: 20px 0 60px;
+  display: flex;
+  justify-content: center;
+  color: var(--color-text);
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 40px;
   margin-top: 20px;
+  max-width: 1000px;
 }
 
-
-
-
 .main-image img {
-  width: 100%;
+  width: 350px;
+  height: 350px;
   height: auto;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 10px;
 }
 .thumb {
   display: flex;
@@ -245,8 +208,19 @@ watch(
   border-radius: 4px;
 }
 
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  font-size: 15px;
+  justify-content: space-between;
+}
 
-
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 .title-row {
   display: flex;
   align-items: center;
@@ -258,10 +232,11 @@ watch(
   margin: 0;
   line-height: 1.1;
   flex: 1;
+  font-family: var(--font-title);
 }
 .price {
   font-weight: 700;
-  color: #4b5563;
+  color: var(--main-color);
   font-size: 20px;
   white-space: nowrap;
 }
@@ -269,11 +244,12 @@ watch(
 .meta {
   color: #374151;
   margin-top: 6px;
+  line-height: 1.7;
 }
 
 .qty-row {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
   margin-top: 6px;
 }
@@ -281,84 +257,6 @@ watch(
   display: flex;
   gap: 12px;
   margin-top: 8px;
-}
-
-.navbar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    background-color: #fff;
-    width: 100%;
-    color: var(--text-color);
-    position: relative;
-    z-index: 30;
-}
-
-.navbar-center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.nav-links {
-    display: flex;
-    gap: 40px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.nav-links li {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.nav-link {
-    position: relative;
-    text-decoration: none;
-    color: var(--text-color);
-    padding-bottom: 6px;
-    display: inline-block;
-}
-
-.nav-link::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--main-color);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 220ms ease;
-}
-
-.nav-link:hover::after,
-.nav-link.active::after {
-    transform: scaleX(1);
-}
-
-/* right section */
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-}
-
-@media (max-width: 900px) {
-    .nav-links { gap: 20px; }
-    .navbar-container { padding: 16px 20px; }
-}
-
-.search-trigger {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
+  justify-content: flex-end;
 }
 </style>

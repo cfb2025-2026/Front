@@ -49,7 +49,7 @@ const router = useRouter()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
-const error = ref<string|null>(null) // Ajout de la variable d'erreur API
+const error = ref<string | null>(null)
 
 // Gestion des erreurs
 const emailInputError = ref(false)
@@ -89,7 +89,7 @@ async function onLogin() {
     const data = await res.json()
     console.log("Réponse login:", data)
     if (res.ok) {
-      // Stockage du token
+      // Stockage des informations utilisateur
       if (data.token) {
         localStorage.setItem('token', data.token)
         if (data.user.users_id) {

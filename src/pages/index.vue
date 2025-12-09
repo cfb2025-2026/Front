@@ -2,7 +2,6 @@
   <div class="home-page">
     <!-- Header -->
     <Navbar />
-
     <!-- Banner -->
     <section class="banner">
       <img src="/banner.png" alt="Banner Markety" class="banner-content"/>
@@ -21,7 +20,6 @@
             >
               ‹
             </button>
-            
             <button 
               class="carousel-btn next" 
               @click="scrollCategories(1)"
@@ -31,7 +29,6 @@
             </button>
           </div>
         </div>
-
         <div class="categories-list" ref="categoriesList">
           <CategoryCard v-for="cat in categories" :key="cat.name" :category="cat" />
         </div>
@@ -79,12 +76,12 @@
       </div>
     </section>
 
+    <StripeCheckout />
     <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-// Imports UI
 import { ref, onMounted, onUnmounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
@@ -112,6 +109,15 @@ const hasOverflow = ref(false)
 const isAtStart = ref(true)
 const isAtEnd = ref(false)
 
+const cart = ref<any[]>([])
+const cartTotal = ref(0)
+
+function loadCart() {
+  const raw = localStorage.getItem('cart') || '[]'
+  cart.value = JSON.parse(raw)
+  cartTotal.value = cart.value.reduce((sum, item) => sum + item.product_price * item.qty, 0)
+}
+
 function checkOverflow() {
   if (categoriesList.value) {
     const el = categoriesList.value
@@ -128,7 +134,6 @@ function scrollCategories(direction: number) {
       left: direction * scrollAmount,
       behavior: 'smooth'
     })
-    
     setTimeout(checkOverflow, 300)
   }
 }
@@ -136,12 +141,11 @@ function scrollCategories(direction: number) {
 onMounted(() => {
   checkOverflow()
   window.addEventListener('resize', checkOverflow)
-  
   if (categoriesList.value) {
     categoriesList.value.addEventListener('scroll', checkOverflow)
   }
-  
   loadProducts()
+  loadCart()
 })
 
 onUnmounted(() => {
@@ -225,6 +229,20 @@ async function loadProducts() {
     products.value = [];
   } finally {
     loading.value = false;
+  }
+}
+
+const checkout = async () => {
+  const response = await fetch('http://localhost:3001/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: cartTotal.value })
+  })
+  const data = await response.json()
+  if (data.url) {
+    window.location.href = data.url
+  } else {
+    alert("Erreur lors de la création du paiement.")
   }
 }
 </script>
@@ -415,6 +433,9 @@ button.customer {
   display: flex;
   gap: 32px;
   justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 18px 0;
 }
 .cta-text {
   display: flex;

@@ -28,7 +28,11 @@
                 <div><span class="total-value">{{ total }}</span><span class="devise"> €</span></div>
               </div>
               <div class="actions">
-                <Button name="Passer la commande" variant="customer" />
+                  <Button
+                     name="Passer la commande"
+                    variant="customer"
+                    @click="goToPayment"
+/>
               </div>
             </div>
           </div>
@@ -181,6 +185,9 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('cart-updated', loadCart)
 })
+const goToPayment = () => {
+  window.location.href = '/payment'
+}
 </script>
 
 <style scoped>

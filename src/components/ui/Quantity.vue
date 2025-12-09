@@ -9,7 +9,7 @@
 <script setup lang="ts">
 const props = defineProps({
   modelValue: { type: Number, default: 1 },
-  min: { type: Number, default: 1 }
+  min: { type: Number, default: 0 } // <-- Changé de 1 à 0
 })
 const emit = defineEmits(['update:modelValue'])
 

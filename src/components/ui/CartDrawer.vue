@@ -43,10 +43,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import CloseIcon from '~/assets/icons/CloseIcon.vue'
 import Button from './Button.vue'
 import CartItem from './CartItem.vue'
+import { useCart } from '~/composables/useCart'
+const { isUserConnected, getUser, removeFromCart, updateCartQty } = useCart()
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -61,18 +63,83 @@ function close() {
 
 const items = ref([])
 
-function loadCart() {
+async function loadCart() {
   try {
-    const raw = localStorage.getItem('cart') || '[]'
-    const parsed = JSON.parse(raw)
-    // ensure qty present and numeric
-    items.value = Array.isArray(parsed)
-      ? parsed.map(it => ({ qty: 1, ...it, qty: Number(it.qty || 1) }))
-      : []
+    if (isUserConnected()) {
+      // Charger depuis l'API
+      await loadCartFromAPI()
+    } else {
+      // Charger depuis localStorage
+      loadCartLocalStorage()
+    }
   } catch (e) {
-    items.value = []
-    // console.error(e)
+    console.error(e)
+    // Fallback sur localStorage
+    loadCartLocalStorage()
   }
+}
+
+function loadCartLocalStorage() {
+  const raw = localStorage.getItem('cart') || '[]'
+  const parsed = JSON.parse(raw)
+  items.value = Array.isArray(parsed)
+    ? parsed.map(it => ({ qty: 1, ...it, qty: Number(it.qty || 1) }))
+    : []
+}
+
+async function loadCartFromAPI() {
+  const token = localStorage.getItem('token')
+  const user = getUser()
+  const base = import.meta.env.VITE_API_BASE_URL || '';
+
+  if (!user || !token) {
+    loadCartLocalStorage()
+    return
+  }
+
+  const res = await fetch(`${base}carts`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if (!res.ok) throw new Error('Erreur chargement panier')
+
+  const carts = await res.json()
+
+  // Vide le panier avant de remplir
+  items.value = []
+
+  // Charge tous les produits en parallèle
+  const products = await Promise.all(
+    carts.map(async cart => {
+      
+      const prodRes = await fetch(`${base}products/${cart.product_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (prodRes.ok) {
+        const product = await prodRes.json();
+        
+        const itemWithCartId = { 
+          ...product,
+          qty: Number(cart.product_quantity) || 1,
+          cart_id: cart.carts_id,  // <-- Vérifier que cart.cart_id existe
+          product_id: product.product_id
+        };
+        
+        return itemWithCartId;
+      }
+      return null
+    })
+  )
+
+  // Ajoute seulement les produits valides
+  items.value = products.filter(Boolean)
 }
 
 function saveCart() {
@@ -81,27 +148,46 @@ function saveCart() {
 
 function updateQty(payload) {
   const { id, qty } = payload || {}
-  const i = items.value.find(x => x.product_id === id)
-  if (i) {
-    i.qty = Math.max(1, Number(qty) || 1)
-    saveCart()
+  console.log("🔄 Mise à jour quantité locale ID:", id, "qty:", qty);
+  
+  // Cherche l'item correspondant pour récupérer le product_id
+  const item = items.value.find(it => it.cart_id === id || it.product_id === id)
+  
+  // Synchronise en arrière-plan AVANT la MAJ locale
+  if (qty < 1) {
+    // Suppression
+    removeFromCart(id)
+  } else {
+    // Mise à jour
+    updateCartQty(id, qty, item?.product_id)
+    // MAJ locale immédiate après confirmation
+    if (item) item.qty = qty
   }
 }
 
 function removeItem(id) {
-  items.value = items.value.filter(x => x.product_id !== id)
-  saveCart()
+  // MAJ locale immédiate
+  items.value = items.value.filter(it => it.cart_id !== id && it.product_id !== id)
+  // Synchronise en arrière-plan
+  removeFromCart(id)
+  // Ne pas appeler loadCart()
 }
 
 const total = computed(() =>
   items.value.reduce((s, it) => s + (Number(it.product_price || 0) * (Number(it.qty || 0))), 0).toFixed(2)
 )
 
+onMounted(() => {
+  loadCart()
+  window.addEventListener('cart-updated', loadCart)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('cart-updated', loadCart)
+})
 const goToPayment = () => {
   window.location.href = '/payment'
 }
-
-onMounted(loadCart)
 </script>
 
 <style scoped>

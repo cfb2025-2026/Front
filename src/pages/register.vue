@@ -4,7 +4,7 @@ import Input from '@/components/ui/Input.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 import Button from '~/components/ui/Button.vue'
-
+import { useCart } from '@/composables/useCart'
 const email = ref('')
 const password = ref('')
 const username = ref('')
@@ -54,8 +54,7 @@ async function onRegister(e: Event) {
       body: JSON.stringify({
         username: username.value,
         email: email.value,
-        password: password.value,
-        isadmin: true
+        password: password.value
       })
     })
     const data = await res.json()

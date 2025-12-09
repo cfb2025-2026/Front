@@ -42,6 +42,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Input from '@/components/ui/Input.vue'
 import Button from '@/components/ui/Button.vue'
+import { useCart } from '@/composables/useCart'
+const { syncLocalCartToUser } = useCart()
 
 const router = useRouter()
 const email = ref('')
@@ -85,16 +87,17 @@ async function onLogin() {
     })
 
     const data = await res.json()
-
+    console.log("Réponse login:", data)
     if (res.ok) {
       // Stockage des informations utilisateur
       if (data.token) {
         localStorage.setItem('token', data.token)
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user)) // Assurez-vous que "data.user" contient le nom
+        if (data.user.users_id) {
+          localStorage.setItem('user', JSON.stringify(data.user.users_id))
         }
       }
       error.value = null
+      await syncLocalCartToUser()
       router.push('/')
     } else {
       error.value = data.message || data.error || "Email ou mot de passe incorrect"

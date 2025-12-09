@@ -9,6 +9,7 @@ const props = defineProps<{
         product_price: number
         product_imgurl?: string
         qty: number
+        cart_id?: string
     }
 }>()
 
@@ -20,11 +21,13 @@ const emit = defineEmits<{
 const subtotal = computed(() => (Number(props.item.product_price || 0) * (props.item.qty || 0)).toFixed(2))
 
 function onQtyChange(v: number) {
-    emit('update:qty', { id: props.item.product_id, qty: v })
+    const id = props.item.cart_id || props.item.product_id
+    emit('update:qty', { id, qty: v })
 }
 
 function onRemove() {
-    emit('remove', props.item.product_id)
+    const id = props.item.cart_id || props.item.product_id
+    emit('remove', id)
 }
 </script>
 

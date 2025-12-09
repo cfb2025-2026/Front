@@ -213,6 +213,8 @@ const selectedKey = ref<string | null>(null)
 function onMenuItemClick(item: string) {
   if (item === 'deconnexion') {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('cart')
     router.push('/login')
     return
   }

@@ -62,13 +62,12 @@ const handleAddToCart = async () => {
   
   isAddingToCart.value = true
   
-  // Use the centralized logic
-  addToCart(props.product)
+  // Le composable gère automatiquement local storage ou API
+  await addToCart(props.product)
   
-  // Simuler un délai pour l'ajout
   setTimeout(() => {
     isAddingToCart.value = false
-  }, 500)
+  }, 300)
 }
 
 const formatPrice = (price) => {

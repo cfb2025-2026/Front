@@ -203,32 +203,6 @@ function formatPrice(val: number | string | undefined) {
   return n.toFixed(2)
 }
 
-function addToCart(product: Product) {
-  try {
-    const raw = localStorage.getItem('cart') || '[]'
-    const cartArr: any[] = JSON.parse(raw)
-    const idx = cartArr.findIndex((p: any) => p.product_id === product.product_id)
-    if (idx >= 0) {
-      cartArr[idx].qty = (cartArr[idx].qty ?? 1) + 1
-    } else {
-      cart.push({ 
-        product_id: product.product_id, 
-        product_name: product.product_name, 
-        product_price: product.product_price, 
-        product_imgurl: product.product_imgurl, 
-        qty: 1 
-      })
-    }
-    localStorage.setItem('cart', JSON.stringify(cartArr))
-    cart.value = cartArr
-    cartTotal.value = cartArr.reduce((sum, item) => sum + item.product_price * item.qty, 0)
-    console.log('Produit ajouté au panier :', product.product_name)
-  } catch (e) {
-    console.error('Erreur ajout panier', e)
-  }
-}
-
-
 async function loadProducts() {
   loading.value = true;
   try {

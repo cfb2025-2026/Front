@@ -47,12 +47,13 @@ defineEmits<{ (e: 'click', event: MouseEvent): void }>()
 
 <style scoped>
 button {
-    font-family: var(--font-family);
-    border-radius: 5px;
-    padding: 13px 43px;
-    font-size: 14px;
-    width: 100%;
-    height: fit-content;
+  cursor: pointer;
+  font-family: var(--font-family);
+  border-radius: 5px;
+  padding: 13px 43px;
+  font-size: 14px;
+  width: 100%;
+  height: fit-content;
   /* smooth default transitions for motion-friendly interactions */
   transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms ease, background-color 180ms ease, color 180ms ease, filter 180ms ease;
 

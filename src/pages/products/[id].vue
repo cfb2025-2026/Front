@@ -29,7 +29,7 @@
           <div class="meta" v-if="product.product_description">{{ product.product_description }}</div>
           <div class="qty-row">
             <span>Quantité</span>
-            <QuantityControl v-model="qty" />
+            <QuantityControl v-model="qty" :min="1" />
           </div>
         </div>
 
@@ -50,6 +50,7 @@ import Button from '@/components/ui/Button.vue'
 import QuantityControl from '@/components/ui/Quantity.vue'
 import Navbar from '~/components/ui/Navbar.vue'
 import Footer from '~/components/ui/Footer.vue'
+import { useCart } from '@/composables/useCart'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -81,29 +82,17 @@ const mainImageSrc = computed(() => {
 })
 
 function setMainImage(i: number) { mainImageIndex.value = i }
-function addToCartWithQty(p = product.value) {
-  if (!p) return
-  try {
-    const key = 'cart'
-    const raw = localStorage.getItem(key) || '[]'
-    const cart: any[] = JSON.parse(raw)
-    const idx = cart.findIndex(x => x.product_id === p.product_id)
-    if (idx >= 0) cart[idx].qty = (cart[idx].qty ?? 1) + qty.value
-    else cart.push({
-      product_id: p.product_id,
-      product_name: p.product_name,
-      product_price: p.product_price,
-      product_imgurl: p.product_imgurl,
-      qty: qty.value
-    })
-    localStorage.setItem(key, JSON.stringify(cart))
-    console.log('Ajouté au panier :', p.product_name, 'x', qty.value)
-  } catch (e) { console.error(e) }
+const { addToCart } = useCart()
+
+function addToCartWithQty() {
+  if (!product.value) return
+  console.log(`Ajout au panier: produit_id=${product.value.product_id}, qty=${qty.value}`)
+  addToCart(product.value, qty.value)
 }
 
 function buyNow() {
   addToCartWithQty()
-  router.push({ path: '/cart' }).catch(() => {})
+  router.push({ path: '/payment' }).catch(() => {})
 }
 
 async function loadProductById(id: string) {

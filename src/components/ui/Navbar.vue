@@ -20,7 +20,7 @@
                 <searchIcon />
             </button>
             <NuxtLink to="/profil"><UserIcon /></NuxtLink>
-            <CartButton :count="1" />
+            <CartButton :count="cartCount" />
             <!-- mobile toggle button -->
             <button
                 class="mobile-toggle"
@@ -82,6 +82,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
+import { useCart } from '~/composables/useCart'
 import searchIcon from '~/assets/icons/SearchIcon.vue'
 import UserIcon from '~/assets/icons/UserIcon.vue';
 import CartButton from './CartButton.vue';
@@ -108,6 +109,21 @@ function onKey(e) {
 }
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
+
+const cartCount = ref(0)
+const { getCartCount } = useCart()
+
+async function refreshCartCount() {
+  cartCount.value = await getCartCount()
+}
+
+onMounted(() => {
+  refreshCartCount()
+  window.addEventListener('cart-updated', refreshCartCount)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('cart-updated', refreshCartCount)
+})
 </script>
 
 <style scoped>

@@ -84,6 +84,7 @@ function onItemClick(item: string) {
   if (item === 'deconnexion') {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('cart')
     router.push('/login')
     return
   }

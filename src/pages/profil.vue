@@ -13,48 +13,71 @@
               <ellipse cx="35" cy="54" rx="20" ry="12" fill="#D6B7A0"/>
             </svg>
           </div>
-          <button class="edit-avatar" @click="onEditAvatar">
-            <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="12" fill="#fff"/>
-              <path d="M15.5 6.5l2 2M7 17l8.5-8.5a1.414 1.414 0 1 1 2 2L9 19H7v-2z" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
         </div>
+      </div>
+
+      <!-- User Info -->
+      <div class="user-info" v-if="!isEditing">
+        <h2>Bienvenue</h2>
+        <p v-if="user?.email">Email : {{ user.email }}</p>
+        <p v-else>Aucune information utilisateur disponible.</p>
+      </div>
+
+      <!-- Edit Form -->
+      <div class="edit-form" v-else>
+        <h2>Modifier le profil</h2>
+        <form @submit.prevent="onSaveProfile">
+          <div class="form-group">
+            <Input
+              :label="'Nom'"
+              id="name"
+              v-model="editUser.username"
+              type="text"
+              placeholder="Votre nom"
+              :required="true"
+              :regex="usernameRegex"
+              @error-state="usernameInputError = $event"
+            />
+          </div>
+          <div class="form-group">
+            <Input
+              :label="'Email'"
+              id="email"
+              v-model="editUser.email"
+              type="email"
+              placeholder="Votre email"
+              :required="true"
+              :regex="emailRegex"
+              @error-state="emailInputError = $event"
+            />
+          </div>
+          <div class="form-actions">
+            <Button
+              name="Enregistrer"
+              type="submit"
+              :disabled="!editUser.username || !editUser.email || emailInputError"
+            />
+            <Button
+              name="Annuler"
+              :secondary="true"
+              @click="isEditing = false"
+            />
+          </div>
+        </form>
       </div>
 
       <!-- Menu Items -->
       <div class="profil-menu">
-        <MenuItem @click="onItemClick('profil')" @edit="onEditClick('profil')">
-          <template #icon>
-            <span>👤</span>
-          </template>
-          Modifier le profil
-        </MenuItem>
-        <MenuItem @click="onItemClick('motdepasse')" @edit="onEditClick('motdepasse')">
-          <template #icon>
-            <span>🔑</span>
-          </template>
-          Mot de passe
-        </MenuItem>
-        <MenuItem @click="onItemClick('historique')" @edit="onEditClick('historique')">
-          <template #icon>
-            <span>📄</span>
-          </template>
-          Historique
-        </MenuItem>
-        <MenuItem @click="onItemClick('notifications')" @edit="onEditClick('notifications')">
-          <template #icon>
-          </template>
-          Notifications
-        </MenuItem>
-        <MenuItem @click="onItemClick('deconnexion')" @edit="onEditClick('deconnexion')">
-          <template #icon>
-            <span>🚪</span>
-          </template>
-          Déconnexion
-        </MenuItem>
+        <ul>
+          <MenuItem
+            v-for="item in menuItems"
+            :key="item.key"
+            :label="item.label"
+            :active="item.key === selectedKey"
+            @select="onMenuItemClick(item.key)"
+          />
+        </ul>
       </div>
-
     </div>
 
     <Footer />
@@ -64,36 +87,146 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { toast } from 'vue3-toastify'
 import Navbar from '@/components/ui/Navbar.vue'
 import Footer from '@/components/ui/Footer.vue'
-import MenuItem from '@/components/profil/MenuItem.vue'
+import MenuItem from '@/components/ui/MenuItem.vue'
+import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
 
 const router = useRouter()
 
-const users = ref([])
+const user = ref<{ users_id: string; username: string; email: string } | null>(null)
+const isEditing = ref(false)
+const editUser = ref<{ username: string; email: string }>({ username: '', email: '' })
+const usernameInputError = ref(false)
+const emailInputError = ref(false)
 
-async function getUsers() {
+const emailRegex = [
+  { pattern: '^[^@]+@[^@]+\\.[^@]+$', message: 'Email invalide' },
+]
 
-}
+const usernameRegex: Array<{ pattern: string, message: string }> = [
+  { pattern: '^.{3,20}$', message: 'Le nom d\'utilisateur doit contenir entre 3 et 20 caractères.' }
+]
 
-onMounted(() => {
-  getUsers()
-})
-
-function onItemClick(item: string) {
-  if (item === 'deconnexion') {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+onMounted(async () => {
+  const token = localStorage.getItem('token')
+  const storedUser = localStorage.getItem('user')
+  if (!token || !storedUser) {
     router.push('/login')
     return
   }
-  alert('Item cliqué : ' + item)
+
+  try {
+    const base = import.meta.env.VITE_API_BASE_URL || ''
+    const apiKey = import.meta.env.VITE_API_KEY || ''
+    const userObj = JSON.parse(storedUser)
+    const userId = userObj.users_id
+
+    if (!userId) {
+      toast.error('Utilisateur non trouvé.')
+      router.push('/login')
+      return
+    }
+
+    const response = await fetch(`${base}users/${userId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: apiKey,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP : ${response.status}`)
+    }
+
+    const fetchedUser = await response.json()
+    user.value = fetchedUser
+    editUser.value = {
+      username: fetchedUser.username || '',
+      email: fetchedUser.email || '',
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération des informations utilisateur :', error)
+    toast.error('Erreur lors de la récupération du profil.')
+    router.push('/login')
+  }
+})
+
+async function onSaveProfile() {
+  const token = localStorage.getItem('token')
+  const storedUser = localStorage.getItem('user')
+  if (!token || !storedUser) {
+    router.push('/login')
+    return
+  }
+
+  try {
+    const base = import.meta.env.VITE_API_BASE_URL || ''
+    const apiKey = import.meta.env.VITE_API_KEY || ''
+    const userObj = JSON.parse(storedUser)
+    const userId = userObj.users_id
+
+    if (!userId) {
+      toast.error('Utilisateur non trouvé.')
+      router.push('/login')
+      return
+    }
+
+    const response = await fetch(`${base}users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(editUser.value),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP : ${response.status}`)
+    }
+
+    const updatedUser = await response.json()
+    user.value = updatedUser
+    isEditing.value = false
+    toast.success('Profil mis à jour avec succès !')
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde des informations utilisateur :', error)
+    toast.error('Erreur lors de la sauvegarde du profil.')
+  }
 }
-function onEditClick(item: string) {
-  alert('Bouton édition cliqué : ' + item)
+
+const menuItems = [
+  { key: 'profil', label: 'Modifier le profil' },
+  // { key: 'paiement', label: 'Mode de paiements' },
+  // { key: 'historique', label: 'Historique' },
+  // { key: 'mdp', label: 'Changer le mot de passe' },
+  { key: 'deconnexion', label: 'Se déconnecter' },
+]
+
+const selectedKey = ref<string | null>(null)
+
+function onMenuItemClick(item: string) {
+  if (item === 'deconnexion') {
+    localStorage.removeItem('token')
+    router.push('/login')
+    return
+  }
+
+  if (item === 'profil') {
+    isEditing.value = true
+    return
+  }
+
+  selectedKey.value = item
 }
+
 function onEditAvatar() {
-  alert('Édition de l\'avatar')
+  alert("Édition de l'avatar")
 }
 </script>
 
@@ -115,9 +248,8 @@ function onEditAvatar() {
 .profil-header {
   width: 100%;
   background: #f5f5f5;
-  padding: 10px 0 10px 0;
-  display: flex;
-  justify-content: center;
+  padding: 10px 0;
+  text-align: center;
 }
 
 .avatar-wrapper {
@@ -133,85 +265,59 @@ function onEditAvatar() {
   cursor: pointer;
 }
 
-.profil-menu {
-  margin: 0 auto;
-  margin-top: 40px;
-  margin-bottom: 40px;
-  max-width: 560px;
+.user-info {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.edit-form {
   width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+.edit-form .form-group {
+  margin-bottom: 15px;
+}
+
+.edit-form .form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.profil-menu {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: transparent;
   align-items: center;
-}
-
-.navbar-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100vw;
-  background: #fff;
-  padding: 8px 0;
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  margin-left: 24px;
-}
-
-.logo-link img {
-  height: 32px;
-}
-
-.navbar-center {
-  flex: 1;
-  display: flex;
   justify-content: center;
+  width: 100%;
+  max-width: 450px;
+  margin: 10px auto;
 }
 
-.nav-links {
-  display: flex;
-  flex-direction: row;
-  gap: 40px;
+ul {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 23px;
+  width: 70%;
 }
 
-.nav-link {
-  color: #222;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 16px;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-right: 24px;
-}
-
-.icon-btn {
-  background: transparent;
-  border: none;
+li {
+  background: #f9f8f6;
+  margin-bottom: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
+  padding: 12px 20px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.users-list {
-  margin-top: 32px;
-  margin-bottom: 32px;
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px #0001;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
+li:hover {
+  background: #f8e5d1;
+}
+
+li.active {
+  background: #f8f8f8;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 </style>

@@ -55,15 +55,6 @@
         </MenuItem>
       </div>
 
-      <!-- Liste des utilisateurs Supabase -->
-      <div v-if="users.length" class="users-list">
-        <h3>Utilisateurs Supabase :</h3>
-        <ul>
-          <li v-for="user in users" :key="user.id">
-            {{ user.email || user.username || user.id }}
-          </li>
-        </ul>
-      </div>
     </div>
 
     <Footer />
@@ -72,21 +63,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '@/components/ui/Navbar.vue'
 import Footer from '@/components/ui/Footer.vue'
 import MenuItem from '@/components/profil/MenuItem.vue'
 
+const router = useRouter()
+
 const users = ref([])
 
 async function getUsers() {
-  const url = "https://twpsekokpqcpswgzdkjn.supabase.co/rest/v1/Users?select=*"
-  const res = await fetch(url, {
-    headers: {
-      apikey: "TON_API_KEY",
-      Authorization: "Bearer TON_API_KEY"
-    }
-  })
-  users.value = await res.json()
+
 }
 
 onMounted(() => {
@@ -94,6 +81,12 @@ onMounted(() => {
 })
 
 function onItemClick(item: string) {
+  if (item === 'deconnexion') {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    router.push('/login')
+    return
+  }
   alert('Item cliqué : ' + item)
 }
 function onEditClick(item: string) {

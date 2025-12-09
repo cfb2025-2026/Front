@@ -16,6 +16,8 @@
   --secondary-color: #EFEFEF;
   --seller-color: #D6B7A0;
   --text-color: #3A3B34;
+  --toastify-font-family: var(--font-family);
+  --toastify-text-color: var(--text-color);
 }
 * {
   box-sizing: border-box;

@@ -4,7 +4,7 @@
     <Navbar />
     <!-- Banner -->
     <section class="banner">
-      <div class="banner-content">BANNIÈRE</div>
+      <img src="/banner.png" alt="Banner Markety" class="banner-content"/>
     </section>
 
     <!-- Catégories -->
@@ -38,31 +38,41 @@
     <!-- Nouveautés -->
     <section class="products">
       <h2>Nouveautés</h2>
-      <div v-if="loading" class="products-list">
-        <div class="product-card" v-for="n in 3" :key="'sk-'+n">
-          <div class="product-img" style="opacity:.15"></div>
-          <div class="product-title" style="height:14px; width:80%; background:#eee;margin-bottom:6px"></div>
-          <div class="product-price" style="height:12px; width:50%; background:#eee"></div>
-        </div>
+
+      <div class="products-list">
+        <!-- Skeleton cards pendant le chargement -->
+        <ProductCard
+          v-if="loading"
+          v-for="n in 6"
+          :key="'skeleton-' + n"
+          :is-loading="true"
+        />
+        
+        <!-- Cartes produits -->
+        <ProductCard
+          v-else
+          v-for="(product, idx) in products.slice(0, visibleCount)"
+          :key="product.product_id"
+          :product="product"
+        />
       </div>
-      <div v-else class="products-list"> 
-        <NuxtLink class="product-card" v-for="product in products" :key="product.product_id" :to="`/products/${product.product_id}`">
-          <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
-          <div class="product-title">{{ product.product_name }}</div>
-          <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
-          <Button name="Ajouter au panier" class="add-to-cart" @click="addToCart(product)" />
-        </NuxtLink>
-      </div>
-      <Button name="Voir plus de produits" class="secondary see-more-btn" />
+
+      <Button 
+        v-if="visibleCount < products.length" 
+        name="Voir plus de produits" 
+        class="customer see-more-btn"
+        @click="showMoreProducts"
+      />
     </section>
 
     <!-- Entreprise CTA -->
     <section class="cta">
       <div class="cta-content">
-        <div>
+        <div class="cta-text">
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
           <Button name="Devenez vendeur sur Markety !" class="customer" />
         </div>
+        <img src="/seller-banner.jpg" alt="CTA" class="cta-img" />
       </div>
     </section>
 
@@ -77,6 +87,7 @@ import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
 import Footer from '~/components/ui/Footer.vue'
 import CategoryCard from '@/components/ui/CategoryCard.vue'
+import ProductCard from '~/components/ui/ProductCard.vue'
 
 const showSearch = ref(false)
 function onSearch(query: string) {
@@ -85,12 +96,12 @@ function onSearch(query: string) {
 }
 
 const categories = [
-  { name: 'Mobilier', img: '/mobilier.svg' },
-  { name: 'Décoration', img: '/décoration.svg' },
-  { name: 'Vaisselle', img: '/vaisselle.svg' },
-  { name: 'Bijoux', img: '/bijoux.svg' },
-  { name: 'Linge de Maison', img: '/linge de maison.svg' },
-  { name: 'Musique', img: '/musique.jpeg' },
+  { name: 'Mobilier', img: '/mobilier.jpg' },
+  { name: 'Décoration', img: '/decoration.jpg' },
+  { name: 'Vaisselle', img: '/vaisselle.jpg' },
+  { name: 'Bijoux', img: '/bijoux.jpg' },
+  { name: 'Linge de Maison', img: '/linge_de_maison.jpg' },
+  { name: 'Musique', img: '/musique.jpg' },
 ]
 
 const categoriesList = ref<HTMLElement | null>(null)
@@ -157,6 +168,36 @@ type Product = {
 const products = ref<Product[]>([])
 const loading = ref(true)
 
+const PRODUCTS_PER_ROW = ref(4)
+const INITIAL_VISIBLE = ref(8)
+const visibleCount = ref(INITIAL_VISIBLE.value)
+
+function updateProductsPerRow() {
+  // Largeur min d'une carte produit (ex: 220px + gap)
+  const cardMinWidth = 220
+  const grid = document.querySelector('.products-list')
+  const gridWidth = grid ? grid.clientWidth : window.innerWidth
+  const perRow = Math.max(1, Math.floor(gridWidth / cardMinWidth))
+  PRODUCTS_PER_ROW.value = perRow
+  INITIAL_VISIBLE.value = perRow * 2
+  visibleCount.value = INITIAL_VISIBLE.value
+}
+
+onMounted(() => {
+  // ...existing code...
+  updateProductsPerRow()
+  window.addEventListener('resize', updateProductsPerRow)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateProductsPerRow)
+})
+
+function showMoreProducts() {
+  visibleCount.value = products.value.length
+}
+
+// helper to format price safely
 function formatPrice(val: number | string | undefined) {
   const n = Number(val ?? 0)
   return n.toFixed(2)
@@ -170,7 +211,13 @@ function addToCart(product: Product) {
     if (idx >= 0) {
       cartArr[idx].qty = (cartArr[idx].qty ?? 1) + 1
     } else {
-      cartArr.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
+      cart.push({ 
+        product_id: product.product_id, 
+        product_name: product.product_name, 
+        product_price: product.product_price, 
+        product_imgurl: product.product_imgurl, 
+        qty: 1 
+      })
     }
     localStorage.setItem('cart', JSON.stringify(cartArr))
     cart.value = cartArr
@@ -181,30 +228,33 @@ function addToCart(product: Product) {
   }
 }
 
+
 async function loadProducts() {
-  loading.value = true
+  loading.value = true;
   try {
-    const { useFetch, useRuntimeConfig } = await import('#imports') as any
-    if (useFetch && useRuntimeConfig) {
-      const config = useRuntimeConfig()
-      const base = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3000'
-      const { data, error } = await useFetch('products', {
-        baseURL: base,
-        onRequest ({ request, options }: { request: Request; options: any }) {
-          options.headers.set('Authorization', `Bearer ${import.meta.env.VITE_API_KEY || ''}`)
-          options.headers.set('apikey', import.meta.env.VITE_API_KEY || '')
-        }
-      })
-      if (error?.value) {
-        console.error('useFetch error:', error.value)
-      } else if (data?.value) {
-        products.value = Array.isArray(data.value) ? data.value : (data.value.products ?? [])
+    const base = import.meta.env.VITE_API_BASE_URL || '';
+    const apiKey = import.meta.env.VITE_API_KEY || '';
+    
+    const response = await fetch(`${base}products`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'apikey': apiKey,
+        'Content-Type': 'application/json'
       }
-      loading.value = false
-      return
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    const data = await response.json();
+    products.value = Array.isArray(data) ? data : (data.products ?? []);
+    console.log('Produits chargés :', products.value);
   } catch (e) {
-    console.log('Error using useFetch', e);
+    console.error('Error loading products:', e);
+    products.value = [];
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -245,16 +295,18 @@ const checkout = async () => {
 
 .banner {
   width: 100vw;
-  height: 120px;
+  height: 60vh;
   background: #EFEFEF;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 .banner-content {
-  color: #888;
-  font-size: 18px;
-  font-weight: 600;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 20% 70%;
 }
 
 .categories {
@@ -268,6 +320,11 @@ const checkout = async () => {
   justify-content: space-between;
   align-items: center;
 }
+.categories h2,
+.products h2 {
+  font-family: var(--font-title);
+  font-size: 16px;
+}
 
 .categories-carousel {
   position: relative;
@@ -275,7 +332,6 @@ const checkout = async () => {
   flex-direction: column;
   gap: 12px;
   margin-top: 12px;
-  border: 2px solid #fcf6f6;
   border-radius: 12px;
   padding: 12px;
   background: #fff
@@ -345,19 +401,13 @@ button.customer {
 }
 .products-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 18px;
-  margin-top: 12px;
+  margin: 12px 0 25px;
+  justify-items: center;
+  justify-content: center; /* Ajouté pour centrer la grille */
 }
-.product-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+
 .product-img {
   width: 100px;
   height: 100px;
@@ -378,8 +428,16 @@ button.customer {
   margin-bottom: 8px;
 }
 .see-more-btn {
-  margin: 24px auto 0 auto;
   display: block;
+  width: fit-content;
+  margin: 0 auto;
+  margin-bottom: 40px; /* Ajouté pour l'espace sous le bouton */
+}
+
+@media (max-width: 600px) {
+  .see-more-btn {
+    margin-bottom: 24px; /* Un peu moins de marge sur mobile */
+  }
 }
 
 .product-card .add-to-cart {
@@ -388,54 +446,90 @@ button.customer {
   white-space: nowrap;
 }
 
-.cart-section {
-  max-width: 500px;
-  margin: 32px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  padding: 24px;
-}
-.cart-item {
+.cta {
+  background: #f5f5f5;
+  width: 100%;
   display: flex;
+  justify-content: center;
+}
+.cta-content {
+  max-width: 1100px;
+  width: 100%;
   align-items: center;
-  margin-bottom: 12px;
-}
-.cart-img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-right: 12px;
-}
-.cart-details {
-  flex: 1;
-}
-.cart-title {
-  font-weight: bold;
-  font-size: 1rem;
-}
-.cart-price {
-  color: #888;
-  font-size: 0.95rem;
-}
-.cart-total {
   display: flex;
+  gap: 32px;
   justify-content: space-between;
   font-size: 1.2rem;
   font-weight: bold;
   margin: 18px 0;
 }
-.checkout-btn {
-  width: 100%;
-  background: #a3a595;
-  color: #fff;
-  font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  padding: 16px;
-  margin-top: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
+.cta-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 30px;
+}
+.cta-content h3 {
+  margin-bottom: 12px;
+  font-family: var(--font-title);
+  text-align: center;
+  font-size: 18px;
+  color: var(--text-color);
+}
+
+/* Responsive pour la bannière */
+@media (max-width: 900px) {
+  .banner {
+    height: 35vh;
+  }
+  .categories {
+    padding: 24px 10px 0 10px;
+  }
+  .cta-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .cta-content > div {
+    width: 100%;
+  }
+}
+
+/* Responsive pour mobile */
+@media (max-width: 600px) {
+  .banner {
+    height: 24vh;
+  }
+  .categories {
+    padding: 12px 2vw 0 2vw;
+  }
+  .products {
+    padding: 0 2vw;
+  }
+  .products-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    justify-content: center; /* Ajouté pour centrer sur mobile aussi */
+  }
+  .cta-content {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  .cta-content > div {
+    width: 100%;
+  }
+  .cta-img {
+    display: none !important; /* Masque l'image CTA sur mobile */
+  }
+}
+
+/* Ajuste la taille des images de produit sur mobile */
+@media (max-width: 400px) {
+  .product-img {
+    width: 80px;
+    height: 80px;
+  }
 }
 </style>

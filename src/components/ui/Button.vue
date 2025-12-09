@@ -81,8 +81,11 @@ button {
         color: var(--text-color);
         border: none;
         box-shadow: 0 0 7px rgba(239, 239, 239, 0.5);
-        padding: 8px 43px;
+        padding: 8px 15px;
         font-size: 12px;
+        &:hover {
+          cursor: pointer;
+        }
     }
 
     &:disabled {

@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { computed, toRefs, ref } from 'vue'
+import { computed, toRefs, ref, watch } from 'vue'
 
 const props = defineProps({
   modelValue: String,
@@ -67,7 +67,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'error', 'error-state'])
-let error = false;
 
 const { type, placeholder, name, id, required, disabled, autocomplete, regex } = toRefs(props)
 
@@ -87,24 +86,26 @@ const modelValueProxy = computed({
 
 // Password visibility toggle
 const showPassword = ref(false)
-let errorMessage = null;
+const errorMessage = ref(null)
+const error = ref(false)
 
 // Check value with regex patterns
 watch(() => props.modelValue, (newValue) => {
-  error = false;
-  errorMessage = null; // Reset error on value change
+  error.value = false
+  errorMessage.value = null // Reset error on value change
+  
   if (regex && newValue) {
     regex.value.forEach((reg) => {
       const pattern = new RegExp(reg.pattern)
       if (!pattern.test(newValue)) {
         // If the pattern does not match, set the error message
-        errorMessage = reg.message || 'Format invalide'
-        error = true;
-        emit('error', errorMessage) // Emit the error message
+        errorMessage.value = reg.message || 'Format invalide'
+        error.value = true
+        emit('error', errorMessage.value) // Emit the error message
       }
     })
   }
-  emit('error-state', error) // Emit whether there's an error or not
+  emit('error-state', error.value) // Emit whether there's an error or not
 })
 
 </script>

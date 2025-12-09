@@ -1,3 +1,11 @@
+# Groupe B
+Salles Otta Wilfrid Ryan
+François-Alexian Lopes
+Illona Saboundjian
+Noémie Saintemarie
+
+[Projet Hébergé](https://markety-front-git-dev-nonokaaas-projects.vercel.app?_vercel_share=qxmtaC1RLvJzU3k5FGdaXlQrpn1QElqr)
+
 # Nuxt Minimal Starter
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.

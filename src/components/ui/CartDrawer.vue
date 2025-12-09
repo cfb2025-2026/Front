@@ -29,10 +29,10 @@
               </div>
               <div class="actions">
                   <Button
-                    name="Passer la commande"
+                     name="Passer la commande"
                     variant="customer"
                     @click="goToPayment"
-                  />
+/>
               </div>
             </div>
           </div>

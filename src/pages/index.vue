@@ -2,7 +2,6 @@
   <div class="home-page">
     <!-- Header -->
     <Navbar />
-
     <!-- Banner -->
     <section class="banner">
       <div class="banner-content">BANNIÈRE</div>

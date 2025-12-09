@@ -2,7 +2,6 @@
   <div class="home-page">
     <!-- Header -->
     <Navbar />
-
     <!-- Banner -->
     <section class="banner">
       <div class="banner-content">BANNIÈRE</div>
@@ -21,7 +20,6 @@
             >
               ‹
             </button>
-            
             <button 
               class="carousel-btn next" 
               @click="scrollCategories(1)"
@@ -31,7 +29,6 @@
             </button>
           </div>
         </div>
-
         <div class="categories-list" ref="categoriesList">
           <CategoryCard v-for="cat in categories" :key="cat.name" :category="cat" />
         </div>
@@ -41,28 +38,22 @@
     <!-- Nouveautés -->
     <section class="products">
       <h2>Nouveautés</h2>
-
       <div v-if="loading" class="products-list">
-        <!-- simple skeleton fallback -->
         <div class="product-card" v-for="n in 3" :key="'sk-'+n">
           <div class="product-img" style="opacity:.15"></div>
           <div class="product-title" style="height:14px; width:80%; background:#eee;margin-bottom:6px"></div>
           <div class="product-price" style="height:12px; width:50%; background:#eee"></div>
         </div>
       </div>
-
       <div v-else class="products-list"> 
-          <NuxtLink class="product-card" v-for="product in products" :key="product.product_id" :to="`/products/${product.product_id}`">
-            <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
-            <div class="product-title">{{ product.product_name }}</div>
-            <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
-
-          <!-- bouton add-to-cart compact (utilise la classe button.add-to-cart du composant Button.vue) -->
+        <NuxtLink class="product-card" v-for="product in products" :key="product.product_id" :to="`/products/${product.product_id}`">
+          <img class="product-img" :src="product.product_imgurl" :alt="product.product_name" />
+          <div class="product-title">{{ product.product_name }}</div>
+          <div class="product-price">{{ formatPrice(product.product_price) }} €</div>
           <Button name="Ajouter au panier" class="add-to-cart" @click="addToCart(product)" />
         </NuxtLink>
       </div>
-
-  <Button name="Voir plus de produits" class="secondary see-more-btn" />
+      <Button name="Voir plus de produits" class="secondary see-more-btn" />
     </section>
 
     <!-- Entreprise CTA -->
@@ -70,17 +61,17 @@
       <div class="cta-content">
         <div>
           <h3>Vous êtes une entreprise et vous cherchez à vendre vos produits ?</h3>
-    <Button name="Devenez vendeur sur Markety !" class="customer" />
+          <Button name="Devenez vendeur sur Markety !" class="customer" />
         </div>
       </div>
     </section>
 
+    <StripeCheckout />
     <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-// Imports UI
 import { ref, onMounted, onUnmounted } from 'vue'
 import Button from '@/components/ui/Button.vue'
 import Navbar from '~/components/ui/Navbar.vue'
@@ -100,15 +91,21 @@ const categories = [
   { name: 'Bijoux', img: '/bijoux.svg' },
   { name: 'Linge de Maison', img: '/linge de maison.svg' },
   { name: 'Musique', img: '/musique.jpeg' },
-  // Ajoutez d'autres catégories pour tester le carousel
-  // { name: 'Livres', img: '/livres.svg' },
-  // { name: 'Jouets', img: '/jouets.svg' },
 ]
 
 const categoriesList = ref<HTMLElement | null>(null)
 const hasOverflow = ref(false)
 const isAtStart = ref(true)
 const isAtEnd = ref(false)
+
+const cart = ref<any[]>([])
+const cartTotal = ref(0)
+
+function loadCart() {
+  const raw = localStorage.getItem('cart') || '[]'
+  cart.value = JSON.parse(raw)
+  cartTotal.value = cart.value.reduce((sum, item) => sum + item.product_price * item.qty, 0)
+}
 
 function checkOverflow() {
   if (categoriesList.value) {
@@ -126,7 +123,6 @@ function scrollCategories(direction: number) {
       left: direction * scrollAmount,
       behavior: 'smooth'
     })
-    
     setTimeout(checkOverflow, 300)
   }
 }
@@ -134,12 +130,11 @@ function scrollCategories(direction: number) {
 onMounted(() => {
   checkOverflow()
   window.addEventListener('resize', checkOverflow)
-  
   if (categoriesList.value) {
     categoriesList.value.addEventListener('scroll', checkOverflow)
   }
-  
   loadProducts()
+  loadCart()
 })
 
 onUnmounted(() => {
@@ -162,24 +157,24 @@ type Product = {
 const products = ref<Product[]>([])
 const loading = ref(true)
 
-// helper to format price safely
 function formatPrice(val: number | string | undefined) {
   const n = Number(val ?? 0)
   return n.toFixed(2)
 }
 
-// add to cart (localStorage) - simple implementation
 function addToCart(product: Product) {
   try {
     const raw = localStorage.getItem('cart') || '[]'
-    const cart: any[] = JSON.parse(raw)
-    const idx = cart.findIndex((p: any) => p.product_id === product.product_id)
+    const cartArr: any[] = JSON.parse(raw)
+    const idx = cartArr.findIndex((p: any) => p.product_id === product.product_id)
     if (idx >= 0) {
-      cart[idx].qty = (cart[idx].qty ?? 1) + 1
+      cartArr[idx].qty = (cartArr[idx].qty ?? 1) + 1
     } else {
-      cart.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
+      cartArr.push({ product_id: product.product_id, product_name: product.product_name, product_price: product.product_price, product_imgurl: product.product_imgurl, qty: 1 })
     }
-    localStorage.setItem('cart', JSON.stringify(cart))
+    localStorage.setItem('cart', JSON.stringify(cartArr))
+    cart.value = cartArr
+    cartTotal.value = cartArr.reduce((sum, item) => sum + item.product_price * item.qty, 0)
     console.log('Produit ajouté au panier :', product.product_name)
   } catch (e) {
     console.error('Erreur ajout panier', e)
@@ -210,6 +205,20 @@ async function loadProducts() {
     }
   } catch (e) {
     console.log('Error using useFetch', e);
+  }
+}
+
+const checkout = async () => {
+  const response = await fetch('http://localhost:3001/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: cartTotal.value })
+  })
+  const data = await response.json()
+  if (data.url) {
+    window.location.href = data.url
+  } else {
+    alert("Erreur lors de la création du paiement.")
   }
 }
 </script>
@@ -379,21 +388,54 @@ button.customer {
   white-space: nowrap;
 }
 
-.cta {
-  background: #f5f5f5;
-  margin: 40px 0 0 0;
-  padding: 24px 0;
-  width: 100%;
+.cart-section {
+  max-width: 500px;
+  margin: 32px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 24px;
 }
-.cta-content {
-  max-width: 1100px;
-  margin: 0 auto;
+.cart-item {
   display: flex;
   align-items: center;
-  gap: 32px;
-  justify-content: space-between;
-}
-.cta-content h3 {
   margin-bottom: 12px;
+}
+.cart-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+.cart-details {
+  flex: 1;
+}
+.cart-title {
+  font-weight: bold;
+  font-size: 1rem;
+}
+.cart-price {
+  color: #888;
+  font-size: 0.95rem;
+}
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 18px 0;
+}
+.checkout-btn {
+  width: 100%;
+  background: #a3a595;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
 }
 </style>

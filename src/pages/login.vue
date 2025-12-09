@@ -92,8 +92,8 @@ async function onLogin() {
       // Stockage des informations utilisateur
       if (data.token) {
         localStorage.setItem('token', data.token)
-        if (data.user.users_id) {
-          localStorage.setItem('user', JSON.stringify(data.user.users_id))
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user))
         }
       }
       error.value = null

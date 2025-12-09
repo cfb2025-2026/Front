@@ -18,7 +18,7 @@
 
       <!-- User Info -->
       <div class="user-info" v-if="!isEditing">
-        <h2>Bienvenue</h2>
+        <h2>Bienvenue {{ user?.username }}</h2>
         <p v-if="user?.email">Email : {{ user.email }}</p>
         <p v-else>Aucune information utilisateur disponible.</p>
       </div>
